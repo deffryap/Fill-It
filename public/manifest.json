@@ -1,0 +1,15 @@
+{
+    "manifest_version": 3,
+    "name": "Fill-It",
+    "version": "1.0.0",
+    "description": "Smart data injection for form testing.",
+    "permissions": [
+        "storage",
+        "activeTab",
+        "scripting"
+    ],
+    "action": {
+        "default_popup": "popup.html",
+        "default_title": "Fill-It"
+    }
+}

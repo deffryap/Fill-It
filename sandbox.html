@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fill-It Extension Test Sandbox</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 font-sans min-h-screen py-10 px-4">
+    <div class="max-w-4xl mx-auto space-y-8">
+        
+        <header class="text-center">
+            <h1 class="text-3xl font-extrabold text-indigo-950">Fill-It Test Sandbox</h1>
+            <p class="text-slate-500 mt-2">Gunakan halaman ini untuk memverifikasi fungsionalitas auto-fill ekstensi Anda.</p>
+        </header>
+
+        <div class="grid md:grid-cols-2 gap-8">
+            <!-- REGISTER FORM -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <div class="flex items-center justify-between border-b pb-3">
+                    <h2 class="text-xl font-bold text-slate-800">Form Pendaftaran (Register)</h2>
+                    <span class="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 text-xs font-bold uppercase tracking-wider">Register Mode</span>
+                </div>
+                <form id="register-form" action="/login.html" onsubmit="event.preventDefault(); alert('Pendaftaran berhasil!');" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nama Lengkap</label>
+                        <input type="text" name="name" placeholder="Masukkan nama lengkap Anda..." class="w-full px-3.5 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none text-sm">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Alamat Email</label>
+                        <input type="email" name="email" placeholder="contoh@mail.id" class="w-full px-3.5 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none text-sm">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nomor Telepon (HP)</label>
+                        <input type="tel" name="phone" placeholder="08xxxxxxxxxx" class="w-full px-3.5 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none text-sm">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Password</label>
+                        <input type="password" name="password" placeholder="••••••••" class="w-full px-3.5 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none text-sm">
+                    </div>
+
+                    <!-- INDONESIAN LOCALIZED FIELDS -->
+                    <div class="border-t pt-4 mt-4 space-y-4">
+                        <h3 class="text-sm font-semibold text-slate-700">Lokalisasi Indonesia</h3>
+                        
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nomor Induk Kependudukan (NIK)</label>
+                            <input type="text" name="nik" placeholder="16 digit NIK..." maxlength="16" class="w-full px-3.5 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none font-mono text-sm">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">NPWP</label>
+                            <input type="text" name="npwp" placeholder="Format NPWP..." class="w-full px-3.5 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none font-mono text-sm">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nama Bank</label>
+                                <select name="bank" class="w-full px-3.5 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none text-sm bg-white">
+                                    <option value="">Pilih Bank</option>
+                                    <option value="BCA">BCA</option>
+                                    <option value="Mandiri">Bank Mandiri</option>
+                                    <option value="BNI">BNI</option>
+                                    <option value="BRI">BRI</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nomor Rekening</label>
+                                <input type="text" name="rekening" placeholder="No Rekening..." class="w-full px-3.5 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none font-mono text-sm">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold shadow transition-colors">Daftar Sekarang</button>
+                </form>
+            </div>
+
+            <!-- LOGIN FORM -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 h-fit">
+                <div class="flex items-center justify-between border-b pb-3">
+                    <h2 class="text-xl font-bold text-slate-800">Form Masuk (Login)</h2>
+                    <span class="px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-600 text-xs font-bold uppercase tracking-wider">Login Mode</span>
+                </div>
+                <p class="text-xs text-slate-500">Form ini akan otomatis terisi dengan kredensial email & password yang didaftarkan di form sebelah kiri saat Anda memicu "Magic Auto-Fill".</p>
+                <form id="login-form" action="/dashboard" onsubmit="event.preventDefault(); alert('Login berhasil!');" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Email / Username</label>
+                        <input type="text" name="email" placeholder="Email atau username..." class="w-full px-3.5 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none text-sm">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Password</label>
+                        <input type="password" name="password" placeholder="••••••••" class="w-full px-3.5 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none text-sm">
+                    </div>
+
+                    <button type="submit" class="w-full py-2.5 bg-indigo-900 hover:bg-indigo-950 text-white rounded-lg text-sm font-bold shadow transition-colors">Masuk</button>
+                </form>
+            </div>
+        </div>
+
+        <footer class="text-center text-xs text-slate-400 border-t pt-4">
+            Fill-It Extension Test Sandbox - Bagian dari Tugas Akhir Kuliah
+        </footer>
+    </div>
+</body>
+</html>
