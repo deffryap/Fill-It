@@ -12,29 +12,20 @@ const getFaker = (locale: Locale) => {
     }
 };
 
-// Custom generator for Indonesian phone numbers
+// Custom generator for Indonesian phone numbers (Strictly dummy starting with 0800 toll-free prefix)
 export const generateIndonesianPhone = (): string => {
-    const prefixes = [
-        '0812', '0813', '0821', '0822', // Telkomsel
-        '0856', '0857', '0858',          // Indosat
-        '0818', '0819', '0878',          // XL
-        '0896', '0897', '0898',          // Tri
-        '0881', '0882', '0888'           // Smartfren
-    ];
-    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
     const isTwelveDigits = Math.random() > 0.5;
     const remainingLength = isTwelveDigits ? 8 : 7;
     let suffix = '';
     for (let i = 0; i < remainingLength; i++) {
         suffix += Math.floor(Math.random() * 10);
     }
-    return `${prefix}${suffix}`;
+    return `0800${suffix}`;
 };
 
-// Custom generator for NIK (16 digits)
+// Custom generator for NIK (16 digits) - Using region code 999999 (province 99 is invalid) to guarantee dummy status
 export const generateIndonesianNIK = (): string => {
-    const regionCodes = ['317401', '327301', '357801', '517101', '127101'];
-    const region = regionCodes[Math.floor(Math.random() * regionCodes.length)];
+    const region = '999999';
 
     const randomYear = Math.floor(Math.random() * (2005 - 1970 + 1)) + 1970;
     const randomMonth = Math.floor(Math.random() * 12) + 1;
@@ -54,9 +45,9 @@ export const generateIndonesianNIK = (): string => {
     return `${region}${dayStr}${monthStr}${yearStr}${sequence}`;
 };
 
-// Custom generator for NPWP (15 digits)
+// Custom generator for NPWP (15 digits) - Using taxpayer prefix 00 to guarantee dummy status
 export const generateIndonesianNPWP = (): { raw: string; formatted: string } => {
-    const p1 = String(Math.floor(Math.random() * 9) + 1).padStart(2, '0');
+    const p1 = '00';
     const p2 = String(Math.floor(Math.random() * 900) + 100);
     const p3 = String(Math.floor(Math.random() * 900) + 100);
     const p4 = String(Math.floor(Math.random() * 9));
@@ -69,7 +60,7 @@ export const generateIndonesianNPWP = (): { raw: string; formatted: string } => 
     return { raw, formatted };
 };
 
-// Custom generator for Indonesian bank account
+// Custom generator for Indonesian bank account - Prefixing with 999 to guarantee dummy status
 export const generateIndonesianBankAccount = (): { bankName: string; accountNo: string } => {
     const banks = [
         { name: 'BCA', digits: 10 },
@@ -78,10 +69,12 @@ export const generateIndonesianBankAccount = (): { bankName: string; accountNo: 
         { name: 'BRI', digits: 15 }
     ];
     const bank = banks[Math.floor(Math.random() * banks.length)];
-    let accountNo = '';
-    for (let i = 0; i < bank.digits; i++) {
-        accountNo += Math.floor(Math.random() * 10);
+    const prefix = '999';
+    let suffix = '';
+    for (let i = 0; i < bank.digits - prefix.length; i++) {
+        suffix += Math.floor(Math.random() * 10);
     }
+    const accountNo = `${prefix}${suffix}`;
     return { bankName: bank.name, accountNo };
 };
 

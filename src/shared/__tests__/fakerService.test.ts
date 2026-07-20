@@ -11,9 +11,9 @@ import {
 describe('Indonesian Form Generator Logic', () => {
     
     describe('generateIndonesianPhone', () => {
-        it('should generate a valid Indonesian phone number starting with 08', () => {
+        it('should generate a valid Indonesian phone number starting with 0800', () => {
             const phone = generateIndonesianPhone();
-            expect(phone).toMatch(/^08\d{9,10}$/);
+            expect(phone).toMatch(/^0800\d{7,8}$/);
             expect(phone.length).toBeGreaterThanOrEqual(11);
             expect(phone.length).toBeLessThanOrEqual(12);
         });
@@ -31,11 +31,10 @@ describe('Indonesian Form Generator Logic', () => {
             expect(nik).toMatch(/^\d{16}$/);
         });
 
-        it('should contain a valid region code prefix', () => {
-            const regionCodes = ['317401', '327301', '357801', '517101', '127101'];
+        it('should contain a dummy region code prefix (999999)', () => {
             const nik = generateIndonesianNIK();
             const prefix = nik.slice(0, 6);
-            expect(regionCodes).toContain(prefix);
+            expect(prefix).toBe('999999');
         });
 
         it('should have a valid day of birth including female offset', () => {
@@ -49,18 +48,19 @@ describe('Indonesian Form Generator Logic', () => {
     });
 
     describe('generateIndonesianNPWP', () => {
-        it('should generate a valid 15-digit NPWP structure', () => {
+        it('should generate a valid 15-digit dummy NPWP structure starting with 00', () => {
             const npwp = generateIndonesianNPWP();
             expect(npwp.raw).toHaveLength(15);
-            expect(npwp.raw).toMatch(/^\d{15}$/);
-            expect(npwp.formatted).toMatch(/^\d{2}\.\d{3}\.\d{3}\.\d{1}-\d{3}\.\d{3}$/);
+            expect(npwp.raw).toMatch(/^00\d{13}$/);
+            expect(npwp.formatted).toMatch(/^00\.\d{3}\.\d{3}\.\d{1}-\d{3}\.000$/);
         });
     });
 
     describe('generateIndonesianBankAccount', () => {
-        it('should generate a bank name and account with digits matching bank standard', () => {
+        it('should generate a bank name and account with digits matching bank standard and prefix 999', () => {
             const account = generateIndonesianBankAccount();
             expect(['BCA', 'Bank Mandiri', 'BNI', 'BRI']).toContain(account.bankName);
+            expect(account.accountNo.slice(0, 3)).toBe('999');
             
             if (account.bankName === 'BCA') {
                 expect(account.accountNo).toHaveLength(10);
