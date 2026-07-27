@@ -31,6 +31,11 @@ export interface Identity {
     jobTitle?: string;
     website?: string;
     bio?: string;
+    city?: string;
+    province?: string;
+    zipCode?: string;
+    kecamatan?: string;
+    kelurahan?: string;
 }
 
 export interface FieldMapping {

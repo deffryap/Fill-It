@@ -144,15 +144,28 @@ export function useScanner(identity: Identity | null, settings: AppSettings): Us
 
             const scanned = results?.[0]?.result;
             if (scanned && Array.isArray(scanned)) {
+                // Generate a fresh cohesive identity batch for this scan pass
+                const scanIdentity = generateIdentity(identity?.locale || settings.selectedLocale);
+
                 const fieldsWithValues: ScannedField[] = scanned.map((field: {
                     selector: string; label: string; type: string;
                     placeholder: string; name: string; id: string;
                 }) => {
                     // Preserve edited state across re-scans
                     const existing = scannedFields.find(f => f.selector === field.selector);
-                    if (existing?.isEdited) return existing;
+                    if (existing?.isEdited) {
+                        // Special case: email field with a custom domain (@company.com)
+                        // → refresh the username from the scan identity, but keep the domain
+                        if (existing.customDomain) {
+                            const newUsername = scanIdentity.email.split('@')[0];
+                            return { ...existing, value: `${newUsername}@${existing.customDomain}` };
+                        }
+                        // All other edited fields: fully locked, return as-is
+                        return existing;
+                    }
 
-                    const guessed = guessValueForField(field, identity || generateIdentity(settings.selectedLocale));
+                    const guessed = guessValueForField(field, scanIdentity);
+
                     return {
                         selector: field.selector,
                         label: field.label,
@@ -230,26 +243,26 @@ export function useScanner(identity: Identity | null, settings: AppSettings): Us
         if (selector) injectSingleField(selector, value);
     };
 
-    // FIX QA #8: reuse shared identity rather than generating a new random one
+    // Refresh a single field with fresh generated dummy data
     const handleRefreshField = (idx: number) => {
-        if (!identity) return;
         const field = scannedFields[idx];
         if (!field) return;
 
+        const freshId = generateIdentity(identity?.locale || settings.selectedLocale);
         const guessed = guessValueForField({
             label: field.label,
             type: field.type,
             name: field.name || '',
             id: field.id || '',
             placeholder: field.placeholder || '',
-        }, identity);
+        }, freshId);
 
         let finalValue = guessed;
         let isStillEdited = false;
 
-        // For email with a custom domain: preserve domain, update the username from identity
+        // For email with a custom domain: preserve domain, update the username from fresh identity
         if (field.label.toLowerCase().includes('email') && field.customDomain) {
-            const newUsername = identity.email.split('@')[0];
+            const newUsername = freshId.email.split('@')[0];
             finalValue = `${newUsername}@${field.customDomain}`;
             isStillEdited = true;
         }

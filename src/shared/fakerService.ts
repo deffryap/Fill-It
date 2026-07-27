@@ -78,6 +78,60 @@ export const generateIndonesianBankAccount = (): { bankName: string; accountNo: 
     return { bankName: bank.name, accountNo };
 };
 
+export interface IndonesianRegion {
+    kelurahan: string;
+    kecamatan: string;
+    city: string;
+    province: string;
+    postalCode: string;
+}
+
+export const INDONESIAN_REGIONS: IndonesianRegion[] = [
+    { kelurahan: 'Menteng', kecamatan: 'Menteng', city: 'Kota Jakarta Pusat', province: 'DKI Jakarta', postalCode: '10310' },
+    { kelurahan: 'Senayan', kecamatan: 'Kebayoran Baru', city: 'Kota Jakarta Selatan', province: 'DKI Jakarta', postalCode: '12190' },
+    { kelurahan: 'Duren Sawit', kecamatan: 'Duren Sawit', city: 'Kota Jakarta Timur', province: 'DKI Jakarta', postalCode: '13440' },
+    { kelurahan: 'Kebon Jeruk', kecamatan: 'Kebon Jeruk', city: 'Kota Jakarta Barat', province: 'DKI Jakarta', postalCode: '11530' },
+    { kelurahan: 'Sunter Agung', kecamatan: 'Tanjung Priok', city: 'Kota Jakarta Utara', province: 'DKI Jakarta', postalCode: '14350' },
+    { kelurahan: 'Dago', kecamatan: 'Coblong', city: 'Kota Bandung', province: 'Jawa Barat', postalCode: '40135' },
+    { kelurahan: 'Sukasari', kecamatan: 'Sukasari', city: 'Kota Bandung', province: 'Jawa Barat', postalCode: '40151' },
+    { kelurahan: 'Margahayu', kecamatan: 'Bekasi Timur', city: 'Kota Bekasi', province: 'Jawa Barat', postalCode: '17113' },
+    { kelurahan: 'Pondok Cina', kecamatan: 'Beji', city: 'Kota Depok', province: 'Jawa Barat', postalCode: '16424' },
+    { kelurahan: 'Babakan Pasar', kecamatan: 'Bogor Tengah', city: 'Kota Bogor', province: 'Jawa Barat', postalCode: '16126' },
+    { kelurahan: 'Serpong', kecamatan: 'Serpong', city: 'Kota Tangerang Selatan', province: 'Banten', postalCode: '15310' },
+    { kelurahan: 'Karawaci', kecamatan: 'Karawaci', city: 'Kota Tangerang', province: 'Banten', postalCode: '15115' },
+    { kelurahan: 'Gubeng', kecamatan: 'Gubeng', city: 'Kota Surabaya', province: 'Jawa Timur', postalCode: '60281' },
+    { kelurahan: 'Mojoroto', kecamatan: 'Mojoroto', city: 'Kota Kediri', province: 'Jawa Timur', postalCode: '64112' },
+    { kelurahan: 'Lowokwaru', kecamatan: 'Lowokwaru', city: 'Kota Malang', province: 'Jawa Timur', postalCode: '65141' },
+    { kelurahan: 'Simpang Lima', kecamatan: 'Semarang Selatan', city: 'Kota Semarang', province: 'Jawa Tengah', postalCode: '50241' },
+    { kelurahan: 'Banjarsari', kecamatan: 'Banjarsari', city: 'Kota Surakarta', province: 'Jawa Tengah', postalCode: '57136' },
+    { kelurahan: 'Suryodiningratan', kecamatan: 'Mantrijeron', city: 'Kota Yogyakarta', province: 'DI Yogyakarta', postalCode: '55141' },
+    { kelurahan: 'Caturtunggal', kecamatan: 'Depok', city: 'Kabupaten Sleman', province: 'DI Yogyakarta', postalCode: '55281' },
+    { kelurahan: 'Kesawan', kecamatan: 'Medan Barat', city: 'Kota Medan', province: 'Sumatera Utara', postalCode: '20111' },
+    { kelurahan: 'Losari', kecamatan: 'Ujung Pandang', city: 'Kota Makassar', province: 'Sulawesi Selatan', postalCode: '90111' },
+    { kelurahan: 'Sanur', kecamatan: 'Denpasar Selatan', city: 'Kota Denpasar', province: 'Bali', postalCode: '80228' },
+    { kelurahan: 'Kuta', kecamatan: 'Kuta', city: 'Kabupaten Badung', province: 'Bali', postalCode: '80361' },
+    { kelurahan: 'Air Hitam', kecamatan: 'Samarinda Ulu', city: 'Kota Samarinda', province: 'Kalimantan Timur', postalCode: '75124' },
+    { kelurahan: 'Pekanbaru Kota', kecamatan: 'Pekanbaru Kota', city: 'Kota Pekanbaru', province: 'Riau', postalCode: '28111' },
+    { kelurahan: 'Padang Barat', kecamatan: 'Padang Barat', city: 'Kota Padang', province: 'Sumatera Barat', postalCode: '25112' }
+];
+
+// Custom generator for Indonesian address with RT/RW format
+export const generateIndonesianAddressRTRW = (regionInput?: IndonesianRegion): string => {
+    const region = regionInput || INDONESIAN_REGIONS[Math.floor(Math.random() * INDONESIAN_REGIONS.length)];
+    const flowerStreets = [
+        'Mawar', 'Melati', 'Anggrek', 'Kamboja', 'Dahlia', 'Flamboyan',
+        'Kenanga', 'Cempaka', 'Tulip', 'Seroja', 'Teratai', 'Asoka',
+        'Bougenville', 'Sakura', 'Lily', 'Lavender', 'Sedap Malam',
+        'Sudirman', 'Gajah Mada', 'Diponegoro', 'Gatot Subroto', 'Ahmad Yani'
+    ];
+    const street = flowerStreets[Math.floor(Math.random() * flowerStreets.length)];
+    const houseNum = Math.floor(Math.random() * 200) + 1;
+    const rt = String(Math.floor(Math.random() * 20) + 1).padStart(3, '0');
+    const rw = String(Math.floor(Math.random() * 20) + 1).padStart(3, '0');
+
+    return `Jl. ${street}, No. ${houseNum}, RT ${rt}/RW ${rw}, Kel. ${region.kelurahan}, Kec. ${region.kecamatan}`;
+};
+
 export const generateIdentity = (locale: Locale): Identity => {
     const f = getFaker(locale);
     const firstName = f.person.firstName();
@@ -114,8 +168,15 @@ export const generateIdentity = (locale: Locale): Identity => {
     if (locale === 'id_ID') {
         const bank = generateIndonesianBankAccount();
         const npwp = generateIndonesianNPWP();
+        const region = INDONESIAN_REGIONS[Math.floor(Math.random() * INDONESIAN_REGIONS.length)];
         return {
             ...baseIdentity,
+            address: generateIndonesianAddressRTRW(region),
+            city: region.city,
+            province: region.province,
+            zipCode: region.postalCode,
+            kecamatan: region.kecamatan,
+            kelurahan: region.kelurahan,
             nik: generateIndonesianNIK(),
             npwp: npwp.formatted,
             bankName: bank.bankName,
@@ -123,7 +184,12 @@ export const generateIdentity = (locale: Locale): Identity => {
         };
     }
 
-    return baseIdentity;
+    return {
+        ...baseIdentity,
+        city: f.location.city(),
+        province: f.location.state(),
+        zipCode: f.location.zipCode(),
+    };
 };
 
 export const generateFieldValue = (category: string, locale: Locale): string => {
@@ -142,13 +208,32 @@ export const generateFieldValue = (category: string, locale: Locale): string => 
             return email;
         }
         case 'phone.number': return locale === 'id_ID' ? generateIndonesianPhone() : f.phone.number();
-        case 'location.streetAddress': return f.location.streetAddress(true);
+        case 'location.streetAddress': return locale === 'id_ID' ? generateIndonesianAddressRTRW() : f.location.streetAddress(true);
+        case 'location.city': {
+            if (locale === 'id_ID') {
+                return INDONESIAN_REGIONS[Math.floor(Math.random() * INDONESIAN_REGIONS.length)].city;
+            }
+            return f.location.city();
+        }
+        case 'location.zipCode': {
+            if (locale === 'id_ID') {
+                return INDONESIAN_REGIONS[Math.floor(Math.random() * INDONESIAN_REGIONS.length)].postalCode;
+            }
+            return f.location.zipCode();
+        }
+        case 'location.state':
+        case 'indonesia.province': {
+            if (locale === 'id_ID') {
+                return INDONESIAN_REGIONS[Math.floor(Math.random() * INDONESIAN_REGIONS.length)].province;
+            }
+            return f.location.state();
+        }
+        case 'indonesia.kecamatan': return INDONESIAN_REGIONS[Math.floor(Math.random() * INDONESIAN_REGIONS.length)].kecamatan;
+        case 'indonesia.kelurahan': return INDONESIAN_REGIONS[Math.floor(Math.random() * INDONESIAN_REGIONS.length)].kelurahan;
         case 'finance.accountNumber': return locale === 'id_ID' ? generateIndonesianBankAccount().accountNo : f.finance.accountNumber();
         case 'lorem.sentence': return f.lorem.sentence();
         case 'internet.password': return f.internet.password();
         case 'internet.username': return f.internet.username();
-        case 'location.city': return f.location.city();
-        case 'location.zipCode': return f.location.zipCode();
         case 'indonesia.nik': return generateIndonesianNIK();
         case 'indonesia.npwp': return generateIndonesianNPWP().formatted;
         case 'finance.bankName': return locale === 'id_ID' ? generateIndonesianBankAccount().bankName : 'BCA';
@@ -167,8 +252,11 @@ export const FAKER_CATEGORIES = [
     { value: 'internet.email', label: 'Email' },
     { value: 'phone.number', label: 'Phone' },
     { value: 'location.streetAddress', label: 'Address' },
-    { value: 'location.city', label: 'City' },
+    { value: 'location.city', label: 'City / Regency' },
     { value: 'location.zipCode', label: 'Zip Code' },
+    { value: 'location.state', label: 'Province' },
+    { value: 'indonesia.kecamatan', label: 'Kecamatan (District)' },
+    { value: 'indonesia.kelurahan', label: 'Kelurahan (Subdistrict)' },
     { value: 'finance.accountNumber', label: 'Bank Account' },
     { value: 'finance.bankName', label: 'Bank Name' },
     { value: 'indonesia.nik', label: 'NIK (Indonesian ID)' },

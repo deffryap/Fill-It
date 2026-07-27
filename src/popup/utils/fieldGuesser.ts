@@ -38,6 +38,11 @@ export const guessValueForField = (field: FieldMeta, identity: Identity): string
     if (c.includes('rekening') || c.includes('norek') || (c.includes('account') && !c.includes('bank') && !c.includes('email'))) return identity.bankAccount;
     if (c.includes('bankname') || c.includes('nama bank') || (c.includes('bank') && !c.includes('account') && !c.includes('rekening'))) return identity.bankName || '';
     if (c.includes('address') || c.includes('alamat') || c.includes('jalan')) return identity.address;
+    if (c.includes('city') || c.includes('kota') || c.includes('kabupaten')) return identity.city || '';
+    if (c.includes('province') || c.includes('provinsi') || c.includes('state')) return identity.province || '';
+    if (c.includes('postal') || c.includes('zip') || c.includes('kode pos') || c.includes('kodepos')) return identity.zipCode || '';
+    if (c.includes('kecamatan') || c.includes('district')) return identity.kecamatan || '';
+    if (c.includes('kelurahan') || c.includes('subdistrict') || c.includes('desa')) return identity.kelurahan || '';
     if (c.includes('password') || c.includes('sandi') || field.type === 'password') return identity.password || 'P@ssw0rd123!';
     if (c.includes('company') || c.includes('perusahaan') || c.includes('kantor')) return identity.company || '';
     if (c.includes('job') || c.includes('pekerjaan') || c.includes('jabatan') || c.includes('occupation')) return identity.jobTitle || '';
@@ -102,6 +107,11 @@ export const getValueFromIdentity = (category: string, identity: Identity): stri
     if (key.includes('email') || key.includes('internet.email')) return identity.email;
     if (key.includes('phone') || key.includes('phone.number')) return identity.phone;
     if (key.includes('address') || key.includes('streetaddress') || key.includes('location.streetaddress')) return identity.address;
+    if (key.includes('city') || key.includes('location.city')) return identity.city || null;
+    if (key.includes('province') || key.includes('state') || key.includes('location.state')) return identity.province || null;
+    if (key.includes('zipcode') || key.includes('postalcode') || key.includes('location.zipcode')) return identity.zipCode || null;
+    if (key.includes('kecamatan') || key.includes('indonesia.kecamatan')) return identity.kecamatan || null;
+    if (key.includes('kelurahan') || key.includes('indonesia.kelurahan')) return identity.kelurahan || null;
     if (key.includes('bankaccount') || key.includes('bank.account') || key.includes('finance.accountnumber')) return identity.bankAccount;
     if (key.includes('nik') || key.includes('indonesia.nik')) return identity.nik || null;
     if (key.includes('npwp') || key.includes('indonesia.npwp')) return identity.npwp || null;
