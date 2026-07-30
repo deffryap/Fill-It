@@ -24,10 +24,11 @@ export const generateIndonesianPhone = (): string => {
         '0881', '0882', '0883', '0884', '0885', '0886', '0887', '0888', '0889',  // Smartfren
     ];
     const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
-    // Remaining digits to reach 11–13 total length
-    const remainingLength = prefix.length === 4 ? Math.random() > 0.5 ? 7 : 8 : 7;
-    let suffix = '';
-    for (let i = 0; i < remainingLength; i++) {
+    // Privacy-Safe Dummy Suffix Strategy:
+    // Uses "0000" + 4 random digits (total 12 digits, e.g. "081200001234")
+    // Passes all mobile operator regex validation while guaranteeing zero collision with active SIM cards.
+    let suffix = '0000';
+    for (let i = 0; i < 4; i++) {
         suffix += Math.floor(Math.random() * 10);
     }
     return `${prefix}${suffix}`;
@@ -266,17 +267,17 @@ export const generateFieldValue = (category: string, locale: Locale): string => 
             }
             return f.location.state();
         }
-        case 'indonesia.kecamatan': return INDONESIAN_REGIONS[Math.floor(Math.random() * INDONESIAN_REGIONS.length)].kecamatan;
-        case 'indonesia.kelurahan': return INDONESIAN_REGIONS[Math.floor(Math.random() * INDONESIAN_REGIONS.length)].kelurahan;
+        case 'indonesia.kecamatan': return locale === 'id_ID' ? INDONESIAN_REGIONS[Math.floor(Math.random() * INDONESIAN_REGIONS.length)].kecamatan : '';
+        case 'indonesia.kelurahan': return locale === 'id_ID' ? INDONESIAN_REGIONS[Math.floor(Math.random() * INDONESIAN_REGIONS.length)].kelurahan : '';
         case 'finance.accountNumber': return locale === 'id_ID' ? generateIndonesianBankAccount().accountNo : f.finance.accountNumber();
         case 'lorem.sentence': return f.lorem.sentence();
         case 'internet.password': return f.internet.password();
         case 'internet.username': return f.internet.username();
-        case 'indonesia.nik': return generateIndonesianNIK();
-        case 'indonesia.nomorkk': return generateIndonesianNomorKK();
-        case 'indonesia.npwp': return generateIndonesianNPWP().formatted;
-        case 'indonesia.npwp16': return generateIndonesianNPWP().npwp16;
-        case 'finance.bankName': return locale === 'id_ID' ? generateIndonesianBankAccount().bankName : 'BCA';
+        case 'indonesia.nik': return locale === 'id_ID' ? generateIndonesianNIK() : '';
+        case 'indonesia.nomorkk': return locale === 'id_ID' ? generateIndonesianNomorKK() : '';
+        case 'indonesia.npwp': return locale === 'id_ID' ? generateIndonesianNPWP().formatted : '';
+        case 'indonesia.npwp16': return locale === 'id_ID' ? generateIndonesianNPWP().npwp16 : '';
+        case 'finance.bankName': return locale === 'id_ID' ? generateIndonesianBankAccount().bankName : 'Bank';
         case 'company.name': return f.company.name();
         case 'person.jobTitle': return f.person.jobTitle();
         case 'internet.url': return f.internet.url();

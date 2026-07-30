@@ -3,63 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fill-It Extension Test Sandbox</title>
+    <title>Portal Pengujian Auto-Fill — Fill-It Extension</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body class="bg-slate-50 font-sans min-h-screen py-10 px-4">
-    <div class="max-w-4xl mx-auto space-y-8">
-        
-        <header class="text-center">
-            <h1 class="text-3xl font-extrabold text-indigo-950">Fill-It Test Sandbox</h1>
-            <p class="text-slate-500 mt-2">Gunakan halaman ini untuk memverifikasi fungsionalitas auto-fill ekstensi Anda.</p>
-        </header>
+<body class="bg-gray-50 text-gray-900 font-sans antialiased min-h-screen">
 
-        <div class="grid md:grid-cols-2 gap-8">
-            <!-- REGISTER FORM -->
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <div class="flex items-center justify-between border-b pb-3">
-                    <h2 class="text-xl font-bold text-slate-800">Form Pendaftaran (Register)</h2>
-                    <span class="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 text-xs font-bold uppercase tracking-wider">Register Mode</span>
+    <!-- HEADER NAVIGATION -->
+    <header class="bg-white border-b border-gray-200">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 rounded bg-gray-900 text-white flex items-center justify-center font-bold text-sm">
+                    FI
                 </div>
-                <form id="register-form" action="/login.html" onsubmit="event.preventDefault(); alert('Pendaftaran berhasil!');" class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nama Lengkap</label>
-                        <input type="text" name="name" placeholder="Masukkan nama lengkap Anda..." class="w-full px-3.5 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none text-sm">
-                    </div>
+                <div>
+                    <h1 class="text-sm font-semibold text-gray-900 leading-none">Fill-It Sandbox</h1>
+                    <span class="text-xs text-gray-500">Lingkungan Pengujian Form Lokal</span>
+                </div>
+            </div>
+
+            <button onclick="resetActiveForm()" class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 focus:outline-none transition">
+                Reset Form
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+
+        <!-- TAB NAVIGATION -->
+        <nav class="flex space-x-1 border-b border-gray-200" aria-label="Tabs">
+            <button id="tab-register-btn" onclick="switchTab('register')" class="px-4 py-2.5 text-sm font-medium border-b-2 border-gray-900 text-gray-900 transition">
+                Pendaftaran Wajib Pajak
+            </button>
+            <button id="tab-login-btn" onclick="switchTab('login')" class="px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition">
+                Masuk Akun (Login)
+            </button>
+        </nav>
+
+        <!-- REGISTER TAB CONTENT -->
+        <div id="tab-register-content" class="bg-white border border-gray-200 rounded-lg shadow-sm">
+            <div class="p-6 sm:p-8 space-y-6">
+                
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900">Formulir Pendaftaran Identitas & Perpajakan</h2>
+                    <p class="text-xs text-gray-500 mt-1">Gunakan ekstensi Fill-It untuk mengisi seluruh kolom formulir berikut secara otomatis.</p>
+                </div>
+
+                <form id="register-form" action="#" onsubmit="event.preventDefault(); alert('Pendaftaran berhasil disimulasikan!');" class="space-y-6">
                     
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Alamat Email</label>
-                        <input type="email" name="email" placeholder="contoh@mail.id" class="w-full px-3.5 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none text-sm">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nomor Telepon (HP)</label>
-                        <input type="tel" name="phone" placeholder="08xxxxxxxxxx" class="w-full px-3.5 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none text-sm">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Password</label>
-                        <input type="password" name="password" placeholder="••••••••" class="w-full px-3.5 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none text-sm">
-                    </div>
-
-                    <!-- INDONESIAN LOCALIZED FIELDS -->
-                    <div class="border-t pt-4 mt-4 space-y-4">
-                        <h3 class="text-sm font-semibold text-slate-700">Lokalisasi Indonesia</h3>
+                    <!-- SECTION 1 -->
+                    <div class="space-y-4">
+                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-100 pb-2">Informasi Akun & Kontak</h3>
                         
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nomor Induk Kependudukan (NIK)</label>
-                            <input type="text" name="nik" placeholder="16 digit NIK..." maxlength="16" class="w-full px-3.5 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none font-mono text-sm">
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">NPWP</label>
-                            <input type="text" name="npwp" placeholder="Format NPWP..." class="w-full px-3.5 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none font-mono text-sm">
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nama Bank</label>
-                                <select name="bank" class="w-full px-3.5 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none text-sm bg-white">
+                                <label for="fullName" class="block text-xs font-medium text-gray-700 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>
+                                <input type="text" name="fullName" id="fullName" placeholder="Contoh: Budi Santoso" class="w-full h-10 px-3 border border-gray-300 rounded text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label for="email" class="block text-xs font-medium text-gray-700 mb-1">Alamat Email <span class="text-red-500">*</span></label>
+                                <input type="email" name="email" id="email" placeholder="nama@email.com" class="w-full h-10 px-3 border border-gray-300 rounded text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                            </div>
+                        </div>
+
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="phone" class="block text-xs font-medium text-gray-700 mb-1">Nomor Telepon / HP <span class="text-red-500">*</span></label>
+                                <input type="tel" name="phone" id="phone" placeholder="081234567890" class="w-full h-10 px-3 border border-gray-300 rounded text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label for="password" class="block text-xs font-medium text-gray-700 mb-1">Kata Sandi <span class="text-red-500">*</span></label>
+                                <input type="password" name="password" id="password" placeholder="••••••••••••" class="w-full h-10 px-3 border border-gray-300 rounded text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 2 -->
+                    <div class="space-y-4 pt-2">
+                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-100 pb-2">Dokumen Identitas (NIK & NPWP)</h3>
+                        
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="nik" class="block text-xs font-medium text-gray-700 mb-1">Nomor Induk Kependudukan (NIK) <span class="text-red-500">*</span></label>
+                                <input type="text" name="nik" id="nik" maxlength="16" placeholder="16 digit angka NIK" class="w-full h-10 px-3 border border-gray-300 rounded font-mono text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label for="npwp" class="block text-xs font-medium text-gray-700 mb-1">NPWP 16 Digit <span class="text-red-500">*</span></label>
+                                <input type="text" name="npwp" id="npwp" maxlength="16" placeholder="16 digit angka NPWP (tanpa titik/strip)" class="w-full h-10 px-3 border border-gray-300 rounded font-mono text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                            </div>
+                        </div>
+
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="nomorKK" class="block text-xs font-medium text-gray-700 mb-1">Nomor Kartu Keluarga (KK)</label>
+                                <input type="text" name="nomorKK" id="nomorKK" maxlength="16" placeholder="16 digit nomor KK" class="w-full h-10 px-3 border border-gray-300 rounded font-mono text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label for="motherName" class="block text-xs font-medium text-gray-700 mb-1">Nama Ibu Kandung</label>
+                                <input type="text" name="motherName" id="motherName" placeholder="Nama ibu kandung" class="w-full h-10 px-3 border border-gray-300 rounded text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 3 -->
+                    <div class="space-y-4 pt-2">
+                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-100 pb-2">Tanggal Lahir & Data Demografi</h3>
+                        
+                        <div class="grid md:grid-cols-3 gap-4">
+                            <div>
+                                <reg-form-item class="block">
+                                    <label class="block text-xs font-medium text-gray-700 mb-1" arialabel="Tanggal Lahir">Tanggal Lahir <span class="text-red-500">*</span></label>
+                                    <ui-input-date-2 id="regDatePick-DateOfBirth" class="block">
+                                        <p-calendar class="block">
+                                            <input type="text" name="birthDate" id="birthDate" placeholder="DD/MM/YYYY" readonly class="w-full h-10 px-3 border border-gray-300 rounded text-sm text-gray-900 placeholder-gray-400 bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent cursor-pointer">
+                                        </p-calendar>
+                                    </ui-input-date-2>
+                                </reg-form-item>
+                            </div>
+                            <div>
+                                <label for="birthPlace" class="block text-xs font-medium text-gray-700 mb-1">Tempat Lahir</label>
+                                <input type="text" name="birthPlace" id="birthPlace" placeholder="Kota lahir" class="w-full h-10 px-3 border border-gray-300 rounded text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label for="gender" class="block text-xs font-medium text-gray-700 mb-1">Jenis Kelamin</label>
+                                <select name="gender" id="gender" class="w-full h-10 px-3 border border-gray-300 rounded text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                                    <option value="">Pilih Jenis Kelamin</option>
+                                    <option value="Laki-Laki">Laki-Laki</option>
+                                    <option value="Perempuan">Perempuan</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="religion" class="block text-xs font-medium text-gray-700 mb-1">Agama</label>
+                                <select name="religion" id="religion" class="w-full h-10 px-3 border border-gray-300 rounded text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                                    <option value="">Pilih Agama</option>
+                                    <option value="Islam">Islam</option>
+                                    <option value="Kristen Protestan">Kristen Protestan</option>
+                                    <option value="Katolik">Katolik</option>
+                                    <option value="Hindu">Hindu</option>
+                                    <option value="Buddha">Buddha</option>
+                                    <option value="Khonghucu">Khonghucu</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="maritalStatus" class="block text-xs font-medium text-gray-700 mb-1">Status Perkawinan</label>
+                                <select name="maritalStatus" id="maritalStatus" class="w-full h-10 px-3 border border-gray-300 rounded text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                                    <option value="">Pilih Status</option>
+                                    <option value="Belum Kawin">Belum Kawin</option>
+                                    <option value="Kawin">Kawin</option>
+                                    <option value="Cerai Hidup">Cerai Hidup</option>
+                                    <option value="Cerai Mati">Cerai Mati</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 4 -->
+                    <div class="space-y-4 pt-2">
+                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-100 pb-2">Informasi Rekening & Alamat</h3>
+                        
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="bank" class="block text-xs font-medium text-gray-700 mb-1">Nama Bank</label>
+                                <select name="bank" id="bank" class="w-full h-10 px-3 border border-gray-300 rounded text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
                                     <option value="">Pilih Bank</option>
                                     <option value="BCA">BCA</option>
                                     <option value="Mandiri">Bank Mandiri</option>
@@ -68,42 +191,91 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nomor Rekening</label>
-                                <input type="text" name="rekening" placeholder="No Rekening..." class="w-full px-3.5 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none font-mono text-sm">
+                                <label for="rekening" class="block text-xs font-medium text-gray-700 mb-1">Nomor Rekening</label>
+                                <input type="text" name="rekening" id="rekening" placeholder="Nomor rekening bank" class="w-full h-10 px-3 border border-gray-300 rounded font-mono text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                            </div>
+                        </div>
+
+                        <div class="grid md:grid-cols-3 gap-4">
+                            <div class="md:col-span-2">
+                                <label for="streetAddress" class="block text-xs font-medium text-gray-700 mb-1">Alamat Jalan</label>
+                                <input type="text" name="streetAddress" id="streetAddress" placeholder="Jl. Jendral Sudirman No. 123" class="w-full h-10 px-3 border border-gray-300 rounded text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label for="zipCode" class="block text-xs font-medium text-gray-700 mb-1">Kode Pos <span class="text-red-500">*</span></label>
+                                <input type="text" name="zipCode" id="zipCode" maxlength="5" placeholder="12345" class="w-full h-10 px-3 border border-gray-300 rounded font-mono text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
                             </div>
                         </div>
                     </div>
 
-                    <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold shadow transition-colors">Daftar Sekarang</button>
-                </form>
-            </div>
-
-            <!-- LOGIN FORM -->
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 h-fit">
-                <div class="flex items-center justify-between border-b pb-3">
-                    <h2 class="text-xl font-bold text-slate-800">Form Masuk (Login)</h2>
-                    <span class="px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-600 text-xs font-bold uppercase tracking-wider">Login Mode</span>
-                </div>
-                <p class="text-xs text-slate-500">Form ini akan otomatis terisi dengan kredensial email & password yang didaftarkan di form sebelah kiri saat Anda memicu "Magic Auto-Fill".</p>
-                <form id="login-form" action="/dashboard" onsubmit="event.preventDefault(); alert('Login berhasil!');" class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Email / Username</label>
-                        <input type="text" name="email" placeholder="Email atau username..." class="w-full px-3.5 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none text-sm">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Password</label>
-                        <input type="password" name="password" placeholder="••••••••" class="w-full px-3.5 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none text-sm">
+                    <!-- SUBMIT BUTTON -->
+                    <div class="pt-4">
+                        <button type="submit" class="w-full h-11 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded text-sm transition">
+                            Submit Form Pendaftaran
+                        </button>
                     </div>
 
-                    <button type="submit" class="w-full py-2.5 bg-indigo-900 hover:bg-indigo-950 text-white rounded-lg text-sm font-bold shadow transition-colors">Masuk</button>
                 </form>
             </div>
         </div>
 
-        <footer class="text-center text-xs text-slate-400 border-t pt-4">
-            Fill-It Extension Test Sandbox - Bagian dari Tugas Akhir Kuliah
+        <!-- LOGIN TAB CONTENT -->
+        <div id="tab-login-content" class="hidden bg-white border border-gray-200 rounded-lg shadow-sm max-w-md mx-auto">
+            <div class="p-6 sm:p-8 space-y-6">
+                
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900">Formulir Masuk Akun</h2>
+                    <p class="text-xs text-gray-500 mt-1">Pada mode login, ekstensi Fill-It hanya menginjeksikan kredensial email dan password.</p>
+                </div>
+
+                <form id="login-form" action="#" onsubmit="event.preventDefault(); alert('Login berhasil disimulasikan!');" class="space-y-4">
+                    <div>
+                        <label for="loginEmail" class="block text-xs font-medium text-gray-700 mb-1">Email / Username <span class="text-red-500">*</span></label>
+                        <input type="text" name="email" id="loginEmail" placeholder="nama@email.com" class="w-full h-10 px-3 border border-gray-300 rounded text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                    </div>
+
+                    <div>
+                        <label for="loginPassword" class="block text-xs font-medium text-gray-700 mb-1">Kata Sandi <span class="text-red-500">*</span></label>
+                        <input type="password" name="password" id="loginPassword" placeholder="••••••••••••" class="w-full h-10 px-3 border border-gray-300 rounded text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                    </div>
+
+                    <button type="submit" class="w-full h-10 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded text-sm transition">
+                        Masuk Akun
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <footer class="text-center text-xs text-gray-500 pt-4 border-t border-gray-200">
+            Fill-It Extension Test Sandbox &mdash; Lingkungan Pengujian Lokal
         </footer>
-    </div>
+
+    </main>
+
+    <script>
+        function switchTab(tab) {
+            const regBtn = document.getElementById('tab-register-btn');
+            const loginBtn = document.getElementById('tab-login-btn');
+            const regContent = document.getElementById('tab-register-content');
+            const loginContent = document.getElementById('tab-login-content');
+
+            if (tab === 'register') {
+                regBtn.className = 'px-4 py-2.5 text-sm font-medium border-b-2 border-gray-900 text-gray-900 transition';
+                loginBtn.className = 'px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition';
+                regContent.classList.remove('hidden');
+                loginContent.classList.add('hidden');
+            } else {
+                loginBtn.className = 'px-4 py-2.5 text-sm font-medium border-b-2 border-gray-900 text-gray-900 transition';
+                regBtn.className = 'px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition';
+                loginContent.classList.remove('hidden');
+                regContent.classList.add('hidden');
+            }
+        }
+
+        function resetActiveForm() {
+            document.querySelectorAll('form').forEach(f => f.reset());
+        }
+    </script>
 </body>
 </html>

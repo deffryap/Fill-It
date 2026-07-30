@@ -37,6 +37,7 @@ export const guessValueForField = (field: FieldMeta, identity: Identity): string
 
     // ── Nama Ibu Kandung ──────────────────────────────────────────────
     if (/\b(mother|mothersname|mother_name|ibu_kandung|ibukandung|nama_ibu|nama\s*ibu|nama_ibu_kandung|nama\s*ibu\s*kandung|gadis_ibu_kandung)\b/i.test(c) || /\b(ibu)\b/i.test(c)) {
+        if (locale !== 'id_ID') return '';
         const fn = ['Siti', 'Dewi', 'Sri', 'Mega', 'Putri', 'Indah', 'Lestari', 'Kartika', 'Rini', 'Wati'];
         const ln = ['Suryani', 'Puspitasari', 'Utami', 'Lestari', 'Wulandari', 'Hidayah', 'Rahayu', 'Wijaya'];
         return `${fn[Math.floor(Math.random() * fn.length)]} ${ln[Math.floor(Math.random() * ln.length)]}`;
@@ -44,6 +45,7 @@ export const guessValueForField = (field: FieldMeta, identity: Identity): string
 
     // ── NPWP (diutamakan sebelum NIK agar tidak tumpang tindih) ──────────
     if (/\b(npwp|no_npwp|no\.?\s*npwp|nomor_npwp|nomor\s*npwp|tax_id|tax_number|tin|pajak)\b/i.test(c)) {
+        if (locale !== 'id_ID') return '';
         const isFormatted15 = placeholder.includes('.') || placeholder.includes('-');
         if (isFormatted15) {
             if (identity.npwp && (identity.npwp.includes('.') || identity.npwp.length === 15)) {
@@ -56,12 +58,14 @@ export const guessValueForField = (field: FieldMeta, identity: Identity): string
 
     // ── Nomor KK ─────────────────────────────────────────────────────────
     if (/\b(kk|no_kk|nokk|no\.?\s*kk|nomor_kk|nomor\s*kk|kartu_keluarga|kartu\s*keluarga|no_kartu_keluarga|no\.?\s*kartu\s*keluarga|nomor_kartu_keluarga|nomor\s*kartu\s*keluarga|family_card|family_card_number|familycardnumber)\b/i.test(c)) {
+        if (locale !== 'id_ID') return '';
         return identity.nomorKK || '3401018888888888';
     }
 
     // ── NIK ───────────────────────────────────────────────────────────────
     if (/\b(nik|no_nik|no\.?\s*nik|nomor_nik|nomor\s*nik|no_ktp|no\.?\s*ktp|nomor_ktp|nomor\s*ktp|noktp|no_identitas|no\.?\s*identitas|nomor_identitas|nomor\s*identitas|national_id)\b/i.test(c)) {
-        return identity.nik || '3401019999999999';
+        if (locale !== 'id_ID') return '';
+        return identity.nik || '';
     }
 
     // ── Tempat Lahir ──────────────────────────────────────────────────

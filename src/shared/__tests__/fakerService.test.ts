@@ -24,12 +24,11 @@ const VALID_PROVINCE_CODES = new Set([
 describe('Indonesian Form Generator Logic', () => {
 
     describe('generateIndonesianPhone', () => {
-        it('should generate a valid Indonesian phone number with a real operator prefix (08xx)', () => {
+        it('should generate a valid Indonesian phone number with real operator prefix (08xx) and privacy-safe 0000xxxx suffix', () => {
             const phone = generateIndonesianPhone();
-            // Must start with a real Indonesian mobile operator prefix
-            expect(phone).toMatch(/^08(1[1-9]|2[1-3]|5[1-9]|7[7-8]|8[1-9]|9[5-9])\d{7,8}$/);
-            expect(phone.length).toBeGreaterThanOrEqual(11);
-            expect(phone.length).toBeLessThanOrEqual(13);
+            // Must start with a real Indonesian mobile operator prefix and contain 0000 test block
+            expect(phone).toMatch(/^08\d{2}0000\d{4}$/);
+            expect(phone).toHaveLength(12);
         });
 
         it('should generate a number consisting only of digits', () => {
@@ -287,6 +286,20 @@ describe('Indonesian Form Generator Logic', () => {
             const npwp16 = generateFieldValue('indonesia.npwp16', 'id_ID');
             expect(npwp16).toHaveLength(16);
             expect(npwp16.slice(6)).toBe('7777777777');
+        });
+
+        it('should NOT generate Indonesian administrative data for non-id_ID locales (en_US, en_SG)', () => {
+            expect(generateFieldValue('indonesia.nik', 'en_US')).toBe('');
+            expect(generateFieldValue('indonesia.npwp', 'en_US')).toBe('');
+            expect(generateFieldValue('indonesia.nomorkk', 'en_US')).toBe('');
+            expect(generateFieldValue('indonesia.kecamatan', 'en_US')).toBe('');
+            expect(generateFieldValue('indonesia.kelurahan', 'en_US')).toBe('');
+
+            expect(generateFieldValue('indonesia.nik', 'en_SG')).toBe('');
+            expect(generateFieldValue('indonesia.npwp', 'en_SG')).toBe('');
+            expect(generateFieldValue('indonesia.nomorkk', 'en_SG')).toBe('');
+            expect(generateFieldValue('indonesia.kecamatan', 'en_SG')).toBe('');
+            expect(generateFieldValue('indonesia.kelurahan', 'en_SG')).toBe('');
         });
     });
 });

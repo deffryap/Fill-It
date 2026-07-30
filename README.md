@@ -48,13 +48,15 @@
 * **Preservasi Per-Field**: Kolom yang diedit manual diberi lencana `Edited` agar nilainya tidak tertimpa saat pemindaian ulang.
 * **Domain Email Kustom**: Mengingat domain email kustom (misal `@perusahaan.com`) dan hanya memperbarui username saat refresh identitas.
 
-### 3. 🌐 Multi-Locale & Identitas Indonesia Lengkap
-Mendukung 3 locale (`id_ID`, `en_SG`, `en_US`) dengan fokus khusus pada kelengkapan formulir regulasi Indonesia:
-* **NIK (16 Digit)**: Diturunkan dari kode provinsi resmi 38 provinsi di Indonesia.
-* **Nomor KK (16 Digit)**: Nomor Kartu Keluarga dengan akhiran anti-bentrokan data.
-* **NPWP-16 & NPWP-15**: Mendukung format NPWP 16-digit (PMK 136/2023) dan format 15-digit terformat (`99.999.999.9-054.000`).
-* **Rekening Bank Lokal**: Bank BCA, Mandiri, BNI, dan BRI dengan penomoran berstandar.
-* **Alamat RT/RW**: Format alamat jalan lengkap dengan kelurahan, kecamatan, kota, provinsi, dan kode pos.
+### 3. 🌐 Multi-Locale & Strict Academic Boundary
+Sistem menerapkan batasan tegas (*strict locale boundary*) antara fitur standar bawaan Faker.js vs Modul Ekstensi Indonesia (TA):
+* **Locale Non-Indonesia (`en_US`, `en_SG`)**: Hanya menggunakan fitur standar bawaan Faker.js (Nama, Email, Telepon Internasional, Alamat, Perusahaan, dll.). Seluruh data administratif Indonesia (NIK, NPWP, No. KK, Ibu Kandung, dll.) **secara ketat diisolasi (disabled)** dan tidak akan dibocorkan.
+* **Locale Indonesia (`id_ID`) (Modul Kustom Tugas Akhir)**:
+  * **NIK (16 Digit)**: Diturunkan dari kode provinsi resmi 38 provinsi di Indonesia (`[6-Digit Wilayah][9999999999]`).
+  * **Nomor KK (16 Digit)**: Nomor Kartu Keluarga dengan akhiran anti-bentrokan data (`[6-Digit Wilayah][8888888888]`).
+  * **NPWP-16 & NPWP-15**: Mendukung format NPWP 16-digit berbasis NIK (PMK 136/2023) dan format 15-digit terformat (`99.999.999.9-054.000`).
+  * **Rekening Bank Lokal**: Bank BCA, Mandiri, BNI, dan BRI dengan penomoran berstandar (prefix `999`).
+  * **Alamat RT/RW**: Format alamat jalan lengkap dengan kelurahan, kecamatan, kota, provinsi, dan kode pos Indonesia.
 
 ---
 
@@ -67,7 +69,7 @@ Semua generator data Indonesia menggunakan algoritma **Privacy-Safe & Anti-Colli
 | **NIK** (16-Digit) | `[6-Digit Wilayah Valid][9999999999]` | Tanggal/Bulan `99` tidak mungkin ada pada kalender resmi Dukcapil. |
 | **Nomor KK** (16-Digit) | `[6-Digit Wilayah Valid][8888888888]` | Suffix `8888888888` berbeda dari NIK untuk mencegah tabrakan data antar-kolom. |
 | **NPWP-16** (16-Digit) | `[6-Digit Wilayah NIK][7777777777]` | Mengikuti aturan PMK 136/2023 (NPWP berbasis NIK) dengan suffix `7777777777`. |
-| **No. Telepon** | `0811-xxxx`, `0812-xxxx`, `0857-xxxx` | Menggunakan awalan penyedia seluler resmi BRTI Indonesia. |
+| **No. Telepon** | `0812-0000-xxxx`, `0857-0000-xxxx` | Awalan prefix seluler BRTI + Blok Suffix `0000` (Jaminan 100% Anti-Collision dengan kartu SIM aktif). |
 | **No. Rekening** | `999xxxxxxx` | Awalan `999` reserved sebagai nomor uji dummy internal perbankan. |
 
 ---
