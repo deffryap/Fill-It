@@ -2,7 +2,15 @@
     "manifest_version": 3,
     "name": "Fill-It",
     "version": "1.0.0",
-    "description": "Smart data injection for form testing.",
+    "description": "Smart data injection for form testing — auto-fill any web form with realistic dummy data in one click.",
+    "author": "Fill-It Team",
+    "homepage_url": "https://github.com/deffryap/fill-it",
+    "minimum_chrome_version": "105",
+    "icons": {
+        "16": "icons/icon16.png",
+        "48": "icons/icon48.png",
+        "128": "icons/icon128.png"
+    },
     "permissions": [
         "storage",
         "activeTab",
@@ -10,6 +18,10 @@
     ],
     "action": {
         "default_popup": "popup.html",
-        "default_title": "Fill-It"
+        "default_title": "Fill-It — Form Auto-Fill Tool",
+        "default_icon": {
+            "16": "icons/icon16.png",
+            "48": "icons/icon48.png"
+        }
     }
 }

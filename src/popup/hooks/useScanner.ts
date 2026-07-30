@@ -144,8 +144,8 @@ export function useScanner(identity: Identity | null, settings: AppSettings): Us
 
             const scanned = results?.[0]?.result;
             if (scanned && Array.isArray(scanned)) {
-                // Generate a fresh cohesive identity batch for this scan pass
-                const scanIdentity = generateIdentity(identity?.locale || settings.selectedLocale);
+                // Use active profile identity if present, otherwise generate new cohesive batch
+                const scanIdentity = identity || generateIdentity(settings.selectedLocale);
 
                 const fieldsWithValues: ScannedField[] = scanned.map((field: {
                     selector: string; label: string; type: string;

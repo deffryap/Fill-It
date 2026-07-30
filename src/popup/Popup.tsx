@@ -116,9 +116,10 @@ function Popup() {
             {/* ── Header ──────────────────── */}
             <header className="flex items-center justify-between px-4 py-3 border-b border-neutral-200">
                 <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-neutral-900 flex items-center justify-center">
-                        <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    <div className="w-7 h-7 rounded-lg bg-neutral-900 flex items-center justify-center gap-[1px] px-1">
+                        <span className="text-white font-bold text-[10px] leading-none tracking-tight">F</span>
+                        <svg className="w-3 h-3 text-white shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
                     </div>
                     <div>
@@ -191,7 +192,7 @@ function Popup() {
             {/* ── Footer ──────────────────── */}
             <div className="mt-auto px-4 py-3 border-t border-neutral-200 flex items-center justify-between bg-white">
                 <span className="text-neutral-400 text-[10px] font-medium">v1.0.0</span>
-                <span className="text-neutral-400 text-[10px] font-medium">Developer Mode</span>
+                <span className="text-neutral-400 text-[10px] font-medium">© 2025 Fill-It</span>
             </div>
         </div>
     );

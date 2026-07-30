@@ -25,73 +25,109 @@ export const guessValueForField = (field: FieldMeta, identity: Identity): string
     const name = field.name.toLowerCase();
     const id = field.id.toLowerCase();
     const placeholder = field.placeholder.toLowerCase();
+    // Haystack: gabungkan semua sumber teks yang tersedia
     const c = `${label} ${name} ${id} ${placeholder}`;
     const locale = identity.locale;
 
-    if (c.includes('email')) return identity.email;
-    if (c.includes('phone') || c.includes('telepon') || c.includes('hp') || c.includes('telp') || field.type === 'tel') return identity.phone;
-    if (c.includes('fullname') || c.includes('nama lengkap') || (c.includes('name') && !c.includes('first') && !c.includes('last') && !c.includes('bank') && !c.includes('company') && !c.includes('user') && !c.includes('teknik'))) return identity.fullName;
-    if (c.includes('firstname') || c.includes('nama depan')) return identity.firstName;
-    if (c.includes('lastname') || c.includes('nama belakang')) return identity.lastName;
-    if ((c.includes('nik') || c.includes('ktp') || c.includes('induk kependudukan')) && !c.includes('teknik')) return identity.nik || '';
-    if (c.includes('npwp')) return identity.npwp || '';
-    if (c.includes('rekening') || c.includes('norek') || (c.includes('account') && !c.includes('bank') && !c.includes('email'))) return identity.bankAccount;
-    if (c.includes('bankname') || c.includes('nama bank') || (c.includes('bank') && !c.includes('account') && !c.includes('rekening'))) return identity.bankName || '';
-    if (c.includes('address') || c.includes('alamat') || c.includes('jalan')) return identity.address;
-    if (c.includes('city') || c.includes('kota') || c.includes('kabupaten')) return identity.city || '';
-    if (c.includes('province') || c.includes('provinsi') || c.includes('state')) return identity.province || '';
-    if (c.includes('postal') || c.includes('zip') || c.includes('kode pos') || c.includes('kodepos')) return identity.zipCode || '';
-    if (c.includes('kecamatan') || c.includes('district')) return identity.kecamatan || '';
-    if (c.includes('kelurahan') || c.includes('subdistrict') || c.includes('desa')) return identity.kelurahan || '';
-    if (c.includes('password') || c.includes('sandi') || field.type === 'password') return identity.password || 'P@ssw0rd123!';
-    if (c.includes('company') || c.includes('perusahaan') || c.includes('kantor')) return identity.company || '';
-    if (c.includes('job') || c.includes('pekerjaan') || c.includes('jabatan') || c.includes('occupation')) return identity.jobTitle || '';
-    if (c.includes('website') || field.type === 'url') return identity.website || '';
-    if (c.includes('bio') || c.includes('tentang') || c.includes('deskripsi') || c.includes('about')) return identity.bio || '';
-    if (c.includes('age') || c.includes('umur') || c.includes('usia')) return String(Math.floor(Math.random() * 43) + 18);
-    if (c.includes('salary') || c.includes('gaji') || c.includes('income')) return String((Math.floor(Math.random() * 17) + 4) * 500000);
-    if (c.includes('birthplace') || c.includes('tempat lahir') || c.includes('tempat_lahir')) {
-        const cities = ['Jakarta', 'Bandung', 'Surabaya', 'Semarang', 'Medan', 'Makassar', 'Yogyakarta', 'Malang', 'Palembang', 'Tangerang'];
-        return locale === 'id_ID' ? cities[Math.floor(Math.random() * cities.length)] : 'New York';
-    }
-    if (c.includes('birthdate') || c.includes('tanggal lahir') || c.includes('date of birth') || c.includes('bday') || c.includes('dd-mm-yyyy')) {
-        let bd = identity.birthDate || '1990-01-01';
-        if (placeholder.includes('dd-mm-yyyy') || placeholder.includes('dd/mm/yyyy')) {
-            const pts = bd.split('-');
-            if (pts.length === 3) bd = `${pts[2]}-${pts[1]}-${pts[0]}`;
-        }
-        return bd;
-    }
-    if (c.includes('agama') || c.includes('religion')) {
-        const rel = ['Islam', 'Kristen', 'Katolik', 'Hindu', 'Buddha', 'Khonghucu'];
-        return rel[Math.floor(Math.random() * rel.length)];
-    }
-    if (c.includes('gender') || c.includes('jenis kelamin') || c.includes('sex') || c.includes('kelamin')) {
-        return Math.random() > 0.5 ? 'Laki-laki' : 'Perempuan';
-    }
-    if (c.includes('marriage') || c.includes('pernikahan') || c.includes('marital') || c.includes('kawin') || c.includes('status perkawinan')) {
-        const st = ['Belum Kawin', 'Kawin', 'Cerai Hidup', 'Cerai Mati'];
-        return st[Math.floor(Math.random() * st.length)];
-    }
-    if (c.includes('ibu kandung') || c.includes('ibu') || c.includes('mother')) {
+    if (/\b(email|e-mail|mail)\b/i.test(c)) return identity.email;
+    if (/\b(phone|telepon|telp|handphone|hp|nohp|no_hp|mobile)\b/i.test(c) || field.type === 'tel') return identity.phone;
+    if (/\b(fullname|nama_lengkap|namalengkap|nama_wajib_pajak|namawajibpajak|taxpayername|taxpayer_name)\b/i.test(c) || (/\b(name|nama)\b/i.test(c) && !/\b(first|last|bank|company|user|teknik|mother|ibu|gadis)\b/i.test(c))) return identity.fullName;
+    if (/\b(firstname|nama_depan|namadepan)\b/i.test(c)) return identity.firstName;
+    if (/\b(lastname|nama_belakang|namabelakang)\b/i.test(c)) return identity.lastName;
+
+    // ── Nama Ibu Kandung ──────────────────────────────────────────────
+    if (/\b(mother|mothersname|mother_name|ibu_kandung|ibukandung|nama_ibu|nama\s*ibu|nama_ibu_kandung|nama\s*ibu\s*kandung|gadis_ibu_kandung)\b/i.test(c) || /\b(ibu)\b/i.test(c)) {
         const fn = ['Siti', 'Dewi', 'Sri', 'Mega', 'Putri', 'Indah', 'Lestari', 'Kartika', 'Rini', 'Wati'];
         const ln = ['Suryani', 'Puspitasari', 'Utami', 'Lestari', 'Wulandari', 'Hidayah', 'Rahayu', 'Wijaya'];
         return `${fn[Math.floor(Math.random() * fn.length)]} ${ln[Math.floor(Math.random() * ln.length)]}`;
     }
-    if (c.includes('familycard') || c.includes('kartu keluarga') || c.includes('familycardnumber') || (c.includes('kk') && (c.includes('nomor') || c.includes('no ')))) {
-        let kk = '999999';
-        for (let i = 0; i < 10; i++) kk += Math.floor(Math.random() * 10);
-        return kk;
+
+    // ── NPWP (diutamakan sebelum NIK agar tidak tumpang tindih) ──────────
+    if (/\b(npwp|no_npwp|no\.?\s*npwp|nomor_npwp|nomor\s*npwp|tax_id|tax_number|tin|pajak)\b/i.test(c)) {
+        const isFormatted15 = placeholder.includes('.') || placeholder.includes('-');
+        if (isFormatted15) {
+            if (identity.npwp && (identity.npwp.includes('.') || identity.npwp.length === 15)) {
+                return identity.npwp;
+            }
+            return '99.999.999.9-054.000';
+        }
+        return identity.npwp || `${(identity.nik && identity.nik.length >= 6) ? identity.nik.slice(0, 6) : '310101'}7777777777`;
     }
-    if (c.includes('familystatus') || c.includes('hubungan keluarga') || c.includes('family member') || c.includes('familystatus')) {
+
+    // ── Nomor KK ─────────────────────────────────────────────────────────
+    if (/\b(kk|no_kk|nokk|no\.?\s*kk|nomor_kk|nomor\s*kk|kartu_keluarga|kartu\s*keluarga|no_kartu_keluarga|no\.?\s*kartu\s*keluarga|nomor_kartu_keluarga|nomor\s*kartu\s*keluarga|family_card|family_card_number|familycardnumber)\b/i.test(c)) {
+        return identity.nomorKK || '3401018888888888';
+    }
+
+    // ── NIK ───────────────────────────────────────────────────────────────
+    if (/\b(nik|no_nik|no\.?\s*nik|nomor_nik|nomor\s*nik|no_ktp|no\.?\s*ktp|nomor_ktp|nomor\s*ktp|noktp|no_identitas|no\.?\s*identitas|nomor_identitas|nomor\s*identitas|national_id)\b/i.test(c)) {
+        return identity.nik || '3401019999999999';
+    }
+
+    // ── Tempat Lahir ──────────────────────────────────────────────────
+    if (/\b(birthplace|birth_place|place_of_birth|placeofbirth|tempat_lahir|tempat\s*lahir|tempatlahir|tplahir|tpt_lahir)\b/i.test(c)) {
+        const cities = ['Kota Jakarta Utara', 'Kota Bandung', 'Kota Surabaya', 'Kota Semarang', 'Kota Medan', 'Kota Makassar', 'Kota Yogyakarta', 'Kota Malang', 'Kota Tangerang Selatan'];
+        return locale === 'id_ID' ? cities[Math.floor(Math.random() * cities.length)] : 'New York';
+    }
+
+    // ── Tanggal Lahir ─────────────────────────────────────────────────
+    if (/\b(birthdate|birth\s*date|date\s*of\s*birth|date_of_birth|dateofbirth|tanggal_lahir|tanggal\s*lahir|tanggallahir|tgl_lahir|tgl\s*lahir|tgllahir|bday)\b/i.test(c) || placeholder.includes('dd-mm-yyyy') || placeholder.includes('dd/mm/yyyy') || placeholder.includes('tanggal lahir') || placeholder.includes('date of birth') || c.toLowerCase().includes('tanggal lahir') || c.toLowerCase().includes('date of birth') || c.toLowerCase().includes('tgl lahir')) {
+        const bd = identity.birthDate || '1990-01-15';
+        const pts = bd.split('-');
+        if (pts.length === 3) {
+            if (placeholder.includes('dd-mm-yyyy') || placeholder.includes('dd-mm')) {
+                return `${pts[2]}-${pts[1]}-${pts[0]}`;
+            }
+            return `${pts[2]}/${pts[1]}/${pts[0]}`;
+        }
+        return bd;
+    }
+
+    // ── Status Perkawinan ─────────────────────────────────────────────
+    if (/\b(marriage|marital|pernikahan|kawin|status_perkawinan|status\s*perkawinan|statusperkawinan|status_kawin|marriagestatus)\b/i.test(c)) {
+        const st = ['Belum Kawin', 'Kawin', 'Cerai Hidup', 'Cerai Mati'];
+        return st[Math.floor(Math.random() * st.length)];
+    }
+
+    // ── Status Hubungan Keluarga ──────────────────────────────────────
+    if (/\b(familystatus|family_status|family_member|family_member_status|familymemberstatus|hubungan_keluarga|hubungan\s*keluarga|status_hubungan_keluarga|status\s*hubungan\s*keluarga)\b/i.test(c)) {
         const fs = ['Kepala Keluarga', 'Suami', 'Istri', 'Anak', 'Mertua', 'Orang Tua'];
         return fs[Math.floor(Math.random() * fs.length)];
     }
-    if (c.includes('taxpayertype') || c.includes('jenis wajib pajak') || c.includes('taxpayer type')) return 'Orang Pribadi atau Warisan Belum Terbagi';
-    if (c.includes('countryoforigin') || c.includes('negara asal') || c.includes('country of origin')) return 'Indonesia';
-    if (c.includes('worktype') || c.includes('jenis pekerjaan') || c.includes('work type')) {
-        const jobs = ['Karyawan Swasta', 'PNS', 'Wiraswasta', 'Profesional', 'Lainnya'];
+
+    // ── Jenis Pekerjaan ───────────────────────────────────────────────
+    if (/\b(worktype|work_type|jenis_pekerjaan|jenis\s*pekerjaan|jenispekerjaan|job|pekerjaan|jabatan|occupation)\b/i.test(c)) {
+        const jobs = ['Karyawan Swasta', 'PNS', 'Wiraswasta', 'Profesional', 'Industri', 'Lainnya'];
         return jobs[Math.floor(Math.random() * jobs.length)];
+    }
+
+    // ── Jenis Wajib Pajak ─────────────────────────────────────────────
+    if (/\b(taxpayertype|taxpayer_type|jenis_wajib_pajak|jenis\s*wajib\s*pajak|jeniswajibpajak)\b/i.test(c)) return 'Orang Pribadi atau Warisan Belum Terbagi';
+
+    // ── Negara Asal ───────────────────────────────────────────────────
+    if (/\b(countryoforigin|country_of_origin|negara_asal|negara\s*asal|negaraasal|country)\b/i.test(c)) return 'Indonesia';
+
+    // ── Kategori Individu ─────────────────────────────────────────────
+    if (/\b(individualcategory|individual_category|kategori_individu|kategori\s*individu|kategoriindividu)\b/i.test(c)) return 'Orang Pribadi';
+
+    if (/\b(rekening|norek|no_rek|accountnumber)\b/i.test(c) || (/\baccount\b/i.test(c) && !/\b(bank|email)\b/i.test(c))) return identity.bankAccount;
+    if (/\b(bankname|nama_bank|namabank)\b/i.test(c) || (/\bbank\b/i.test(c) && !/\b(account|rekening)\b/i.test(c))) return identity.bankName || '';
+    if (/\b(address|alamat|jalan)\b/i.test(c)) return identity.address;
+    if (/\b(city|kota|kabupaten)\b/i.test(c)) return identity.city || '';
+    if (/\b(province|provinsi|state)\b/i.test(c)) return identity.province || '';
+    if (/\b(postal|zip|zipcode|zip_code|kodepos|kode_pos|kode\s*pos|postcode|post_code|post\s*code)\b/i.test(c)) return identity.zipCode || '';
+    if (/\bkecamatan\b|\bdistrict\b/i.test(c)) return identity.kecamatan || '';
+    if (/\bkelurahan\b|\bsubdistrict\b|\bdesa\b/i.test(c)) return identity.kelurahan || '';
+    if (/\b(password|sandi)\b/i.test(c) || field.type === 'password') return identity.password || 'P@ssw0rd123!';
+    if (/\b(company|perusahaan|kantor)\b/i.test(c)) return identity.company || '';
+    if (/\b(job|pekerjaan|jabatan|occupation)\b/i.test(c)) return identity.jobTitle || '';
+    if (/\bwebsite\b/i.test(c) || field.type === 'url') return identity.website || '';
+    if (/\b(bio|tentang|deskripsi|about)\b/i.test(c)) return identity.bio || '';
+    if (/\b(age|umur|usia)\b/i.test(c)) return String(Math.floor(Math.random() * 43) + 18);
+    if (/\b(salary|gaji|income)\b/i.test(c)) return String((Math.floor(Math.random() * 17) + 4) * 500000);
+    if (/\b(agama|religion)\b/i.test(c)) {
+        const rel = ['Islam', 'Kristen', 'Katolik', 'Hindu', 'Buddha', 'Khonghucu'];
+        return rel[Math.floor(Math.random() * rel.length)];
     }
     if (field.type === 'textarea') return 'Form testing data.';
     if (field.type === 'checkbox') return 'true';
@@ -114,6 +150,11 @@ export const getValueFromIdentity = (category: string, identity: Identity): stri
     if (key.includes('kelurahan') || key.includes('indonesia.kelurahan')) return identity.kelurahan || null;
     if (key.includes('bankaccount') || key.includes('bank.account') || key.includes('finance.accountnumber')) return identity.bankAccount;
     if (key.includes('nik') || key.includes('indonesia.nik')) return identity.nik || null;
+    if (key.includes('nomorkk') || key.includes('indonesia.nomorkk')) return identity.nomorKK || null;
+    if (key.includes('npwp16') || key.includes('indonesia.npwp16')) {
+        const regionCode = (identity.nik && identity.nik.length >= 6) ? identity.nik.slice(0, 6) : '310101';
+        return `${regionCode}7777777777`;
+    }
     if (key.includes('npwp') || key.includes('indonesia.npwp')) return identity.npwp || null;
     if (key.includes('bankname') || key.includes('finance.bankname')) return identity.bankName || null;
     if (key.includes('birthdate')) return identity.birthDate || null;

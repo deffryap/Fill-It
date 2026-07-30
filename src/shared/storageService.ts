@@ -8,6 +8,25 @@ const KEYS = {
     SESSION: 'fill_it_session',
 };
 
+// ─── Schema Validators ────────────────────────────────────────────────────────
+// Ensure data from storage conforms to the expected shape before use.
+// Guards against crashes when loading data saved by an older extension version.
+
+const validateIdentity = (data: unknown): Identity | null => {
+    if (!data || typeof data !== 'object') return null;
+    const d = data as Record<string, unknown>;
+    // Required fields check
+    if (typeof d.fullName !== 'string' || typeof d.email !== 'string' || typeof d.locale !== 'string') return null;
+    return data as Identity;
+};
+
+const validateSettings = (data: unknown): AppSettings | null => {
+    if (!data || typeof data !== 'object') return null;
+    const d = data as Record<string, unknown>;
+    if (typeof d.autoSubmit !== 'boolean' || typeof d.safeMode !== 'boolean' || typeof d.selectedLocale !== 'string') return null;
+    return data as AppSettings;
+};
+
 const isExtension = () =>
     typeof chrome !== 'undefined' && chrome?.storage?.session;
 
@@ -24,10 +43,10 @@ export const saveIdentity = async (identity: Identity): Promise<void> => {
 export const getIdentity = async (): Promise<Identity | null> => {
     if (isExtension()) {
         const r = await chrome.storage.session.get(KEYS.IDENTITY);
-        return (r[KEYS.IDENTITY] as Identity) ?? null;
+        return validateIdentity(r[KEYS.IDENTITY]);
     }
     const d = sessionStorage.getItem(KEYS.IDENTITY);
-    return d ? JSON.parse(d) : null;
+    return d ? validateIdentity(JSON.parse(d)) : null;
 };
 
 export const clearIdentity = async (): Promise<void> => {
@@ -76,10 +95,10 @@ export const saveSettings = async (settings: AppSettings): Promise<void> => {
 export const getSettings = async (): Promise<AppSettings> => {
     if (typeof chrome !== 'undefined' && chrome?.storage?.local) {
         const r = await chrome.storage.local.get(KEYS.SETTINGS);
-        return (r[KEYS.SETTINGS] as AppSettings) ?? DEFAULT_SETTINGS;
+        return validateSettings(r[KEYS.SETTINGS]) ?? DEFAULT_SETTINGS;
     }
     const d = localStorage.getItem(KEYS.SETTINGS);
-    return d ? JSON.parse(d) : DEFAULT_SETTINGS;
+    return d ? (validateSettings(JSON.parse(d)) ?? DEFAULT_SETTINGS) : DEFAULT_SETTINGS;
 };
 
 // ─── Last Registered Identity (for credentials transfer) ───────────
@@ -95,10 +114,10 @@ export const saveLastRegisteredIdentity = async (identity: Identity): Promise<vo
 export const getLastRegisteredIdentity = async (): Promise<Identity | null> => {
     if (isExtension()) {
         const r = await chrome.storage.session.get(KEYS.LAST_REGISTERED);
-        return (r[KEYS.LAST_REGISTERED] as Identity) ?? null;
+        return validateIdentity(r[KEYS.LAST_REGISTERED]);
     }
     const d = sessionStorage.getItem(KEYS.LAST_REGISTERED);
-    return d ? JSON.parse(d) : null;
+    return d ? validateIdentity(JSON.parse(d)) : null;
 };
 
 // ─── Test Sessions ──────────────────────────────────────────────────
@@ -122,7 +141,7 @@ export const saveTestSession = async (session: TestSession): Promise<void> => {
 
 export const startNewSession = async (): Promise<TestSession> => {
     const newSession: TestSession = {
-        id: Math.random().toString(36).slice(2, 9),
+        id: crypto.randomUUID(),
         startTime: Date.now(),
         isActive: true,
         logs: [],
@@ -143,7 +162,7 @@ export const logInjection = async (url: string, templateName: string, data: Reco
     const current = await getTestSession();
     if (current && current.isActive) {
         const newLog: InjectedLog = {
-            id: Math.random().toString(36).slice(2, 9),
+            id: crypto.randomUUID(),
             timestamp: Date.now(),
             url,
             templateName,

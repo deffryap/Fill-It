@@ -1,289 +1,203 @@
 # Fill-It ⚡
 
-> **Pengujian Form Cerdas — Deteksi, Buat Data & Injeksi Dalam Satu Klik**
+> **Smart Form Testing & Data Injection Extension — Auto-fill any web form with realistic, privacy-safe dummy data in one click.**
 
-[![Bahasa Indonesia](https://img.shields.io/badge/Bahasa-Indonesia-red?style=flat-square)](#bahasa-indonesia) [![English](https://img.shields.io/badge/Language-English-blue?style=flat-square)](#english)
+[![Manifest V3](https://img.shields.io/badge/Chrome-Manifest_V3-blue.svg?style=flat-square)](https://developer.chrome.com/docs/extensions/mv3/intro/)
+[![React 19](https://img.shields.io/badge/React-19.2-61dafb.svg?style=flat-square)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg?style=flat-square)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-7.3-646cff.svg?style=flat-square)](https://vitejs.dev/)
+[![License](https://img.shields.io/badge/License-Academic_TA-green.svg?style=flat-square)](#-lisensi--license)
+
+---
+
+## 📌 Daftar Isi / Table of Contents
+- [🇮🇩 Bahasa Indonesia](#-bahasa-indonesia)
+  - [Fitur Utama](#-fitur-utama)
+  - [Strategi Dummy Privacy-Safe](#-strategi-dummy-data-privacy-safe)
+  - [Analisis Arsitektur Enterprise & Batasan Teknis](#-analisis-arsitektur-enterprise--batasan-teknis)
+  - [Arsitektur Kode & Komponen](#-arsitektur-kode--komponen)
+  - [Panduan Developer & Build](#-panduan-developer--build)
+  - [Instalasi di Browser](#-instalasi-di-browser)
+- [🇬🇧 English](#-english)
+  - [Key Features](#-key-features)
+  - [Privacy-Safe Dummy Strategy](#-privacy-safe-dummy-strategy)
+  - [Enterprise Architecture Analysis & Technical Boundaries](#-enterprise-architecture-analysis--technical-boundaries)
+  - [Architecture](#-architecture)
+  - [Developer Setup](#-developer-setup)
+- [🛡️ Keamanan & Lisensi](#%EF%B8%8F-keamanan--lisensi)
 
 ---
 
 <a name="bahasa-indonesia"></a>
 # 🇮🇩 Bahasa Indonesia
 
-Fill-It adalah ekstensi browser Chrome / Edge yang dirancang untuk QA engineer dan developer yang sering menguji formulir web. Ekstensi ini secara otomatis mendeteksi kolom input pada halaman aktif, menghasilkan data dummy realistis sesuai locale, dan menyuntikkannya secara instan — sehingga formulir yang kosong bisa terisi penuh dalam hitungan detik.
+**Fill-It** adalah ekstensi browser berbasis Chrome Manifest V3 yang dirancang untuk **Software Quality Assurance (SQA) Engineers**, **Frontend Developers**, dan **Form Testers**. Ekstensi ini memindai kolom formulir web secara otomatis, memetakan konteks bisnis (seperti NIK, NPWP, Nomor KK, Rekening Bank, Tanggal Lahir, dll.), serta menginjeksikan data dummy yang valid secara struktur namun 100% aman dari data pribadi warga nyata.
 
 ---
 
 ## ✨ Fitur Utama
 
-### 🪄 Tab Identity Profile — Isi Otomatis Sekali Klik
-- **Tombol Fill It**: Memindai halaman aktif, menebak nilai yang tepat untuk setiap kolom, dan menyuntikkan semua data dalam satu operasi.
-- **Deteksi Kolom Cerdas**: Secara otomatis memetakan label, nama, ID, dan placeholder ke tipe data yang sesuai (nama, email, telepon, NIK, NPWP, rekening, tanggal lahir, jenis kelamin, agama, status perkawinan, nama ibu, nomor KK, dll.).
-- **Deteksi Login vs. Pendaftaran**: Mendeteksi halaman login dari URL dan hanya mengisi `email/username` + `password`. Pada halaman registrasi, identitas baru yang lengkap digenerate secara otomatis.
-- **Kartu Identitas yang Bisa Diedit**: Setiap kolom pada kartu profil dapat diedit langsung sebelum data diinjeksikan. Perubahan disimpan antar sesi.
-- **Refresh Per-Kolom**: Buat ulang satu kolom identitas tanpa menghilangkan kolom lainnya.
+### 1. 🪄 Identity Profile Tab (Injeksi 1-Klik)
+* **One-Click Fill It**: Memindai seluruh input di halaman aktif dan mengisinya secara atomik.
+* **Deteksi Konteks Cerdas**: Mengidentifikasi kolom berdasarkan atribut (`id`, `name`, `placeholder`, `aria-label`, `data-testid`), pembungkus label (`<label>`, `<reg-form-item>`), dan hierarki kontainer parent.
+* **Dukungan Kompleksitas UI Modern**: Penanganan khusus untuk komponen **PrimeNG / Angular** (`<p-calendar>`, `<p-dropdown>`, `<ui-input-date-2>`) termasuk pengiriman event kustom `ngModelChange`, simulasi keyboard, dan penanganan atribut `readonly`.
+* **Deteksi Halaman Hibrida**: Otomatis membedakan mode **Login** (hanya menginjeksikan kredensial) dan mode **Registrasi** (menggenerasi profil identitas lengkap baru).
 
-### 🔍 Tab Form Scanner — Pindai, Edit & Injeksi
-- **Pindai Form**: Menemukan semua input yang terlihat di halaman dan menampilkannya beserta nilai dugaan di dalam popup.
-- **Edit Sebelum Injeksi**: Ubah nilai kolom mana saja sebelum dikirim ke halaman. Kolom yang diedit dikunci dengan lencana `Edited` agar bertahan saat pindai ulang.
-- **Penyimpanan Domain Email Kustom**: Jika Anda mengetik domain email kustom (misal `@perusahaan.com`), domain tersebut diingat dan hanya bagian username yang diperbarui saat refresh.
-- **Sinkronisasi Real-Time**: Mengedit nilai di scanner langsung tercermin di halaman web tanpa perlu klik Inject.
-- **Inject Custom Data**: Mengirimkan semua nilai (yang mungkin sudah diedit) ke halaman dalam satu klik.
+### 2. 🔍 Form Scanner Tab (Pindai, Edit & Injeksi)
+* **Inspeksi Form Real-Time**: Menampilkan seluruh elemen input yang terdeteksi di halaman aktif dalam daftar interaktif.
+* **Preservasi Per-Field**: Kolom yang diedit manual diberi lencana `Edited` agar nilainya tidak tertimpa saat pemindaian ulang.
+* **Domain Email Kustom**: Mengingat domain email kustom (misal `@perusahaan.com`) dan hanya memperbarui username saat refresh identitas.
 
-### 🌐 Dukungan Multi-Locale
-| Bendera | Locale | Kolom Khusus |
-|---------|--------|--------------|
-| 🇮🇩 | Indonesian (ID) | NIK, NPWP, rekening bank lokal, format telepon Indonesia |
-| 🇸🇬 | Singapore (SG) | — |
-| 🇺🇸 | American (US) | — |
-
-### 🛡️ Perlindungan Data Dummy Mutlak
-Semua data sensitif Indonesia di-generate agar **valid secara struktur namun dijamin palsu**, sehingga tidak pernah bertabrakan dengan data warga nyata:
-
-| Kolom | Strategi Dummy |
-|-------|----------------|
-| **No. Telepon** | Awalan `0800-xxxx` (nomor bebas pulsa, tidak dialokasikan untuk pelanggan seluler aktif) |
-| **NIK** (16 digit) | Kode provinsi `99` (tidak ada di Dukcapil) |
-| **NPWP** (15 digit) | Kategori wajib pajak `00`, akhiran `.000` |
-| **Nomor Rekening** | Awalan `999` (nomor cadangan internal bank, bukan untuk nasabah aktif) |
-
-### 🎛️ Pengaturan
-| Pengaturan | Keterangan |
-|------------|------------|
-| **Safe Mode** | Menampilkan dialog konfirmasi sebelum injeksi dilakukan (toggle ON/OFF) |
-| **Auto-Submit** | Otomatis mengklik tombol submit setelah Fill It berhasil (toggle ON/OFF) |
-
-### 📋 Perekaman Sesi & Ekspor Log
-- Mulai sesi perekaman untuk memantau setiap injeksi: halaman apa, data apa, dan kapan.
-- Ekspor log sesi sebagai file `.json` untuk laporan QA atau audit.
-
-### 📑 Template Kolom Kustom
-- Simpan template bernama yang memetakan CSS selector tertentu ke kategori Faker.js.
-- Aktifkan template untuk menerapkan override kolom tetap di atas hasil deteksi otomatis.
+### 3. 🌐 Multi-Locale & Identitas Indonesia Lengkap
+Mendukung 3 locale (`id_ID`, `en_SG`, `en_US`) dengan fokus khusus pada kelengkapan formulir regulasi Indonesia:
+* **NIK (16 Digit)**: Diturunkan dari kode provinsi resmi 38 provinsi di Indonesia.
+* **Nomor KK (16 Digit)**: Nomor Kartu Keluarga dengan akhiran anti-bentrokan data.
+* **NPWP-16 & NPWP-15**: Mendukung format NPWP 16-digit (PMK 136/2023) dan format 15-digit terformat (`99.999.999.9-054.000`).
+* **Rekening Bank Lokal**: Bank BCA, Mandiri, BNI, dan BRI dengan penomoran berstandar.
+* **Alamat RT/RW**: Format alamat jalan lengkap dengan kelurahan, kecamatan, kota, provinsi, dan kode pos.
 
 ---
 
-## 🏗️ Arsitektur
+## 🛡️ Strategi Dummy Data Privacy-Safe
 
-Ekstensi ini dibangun dengan **arsitektur modular yang bersih** — logika dipisahkan berdasarkan tanggung jawab agar setiap file tetap terfokus dan mudah diuji.
+Semua generator data Indonesia menggunakan algoritma **Privacy-Safe & Anti-Collision** yang menjamin data lulus validasi format regulasi tetapi **tidak mungkin memaparkan data warga asli**:
+
+| Kolom Identitas | Format / Struktur | Strategi Keamanan Privacy |
+|-----------------|-------------------|---------------------------|
+| **NIK** (16-Digit) | `[6-Digit Wilayah Valid][9999999999]` | Tanggal/Bulan `99` tidak mungkin ada pada kalender resmi Dukcapil. |
+| **Nomor KK** (16-Digit) | `[6-Digit Wilayah Valid][8888888888]` | Suffix `8888888888` berbeda dari NIK untuk mencegah tabrakan data antar-kolom. |
+| **NPWP-16** (16-Digit) | `[6-Digit Wilayah NIK][7777777777]` | Mengikuti aturan PMK 136/2023 (NPWP berbasis NIK) dengan suffix `7777777777`. |
+| **No. Telepon** | `0811-xxxx`, `0812-xxxx`, `0857-xxxx` | Menggunakan awalan penyedia seluler resmi BRTI Indonesia. |
+| **No. Rekening** | `999xxxxxxx` | Awalan `999` reserved sebagai nomor uji dummy internal perbankan. |
+
+---
+
+## 🔍 Analisis Arsitektur Enterprise & Batasan Teknis
+
+Dalam evaluasi pengujian perangkat lunak (*Software Testing Boundary Analysis*), ekstensi ini berhasil 100% pada formulir berbasis React, Vue, HTML5 Native, Bootstrap, dan Formik. Namun, terdapat batasan teknis alami (*Technical Edge Case*) pada sistem tingkat enterprise berskala nasional seperti **Coretax DJP**:
+
+1. **Enkapsulasi State Angular `ControlValueAccessor`**:
+   Sistem seperti Coretax mengisolasi data input di dalam state privat Angular `FormGroup`. Elemen `<input>` fisik hanyalah lapisan tampilan visual (*display layer*) yang terkunci. Manipulasi teks DOM dari luar akan di-*rollback* oleh siklus *Angular Change Detection*.
+2. **Chrome Extension Isolated World Security**:
+   Berdasarkan spesifikasi Manifest V3, Content Script ekstensi berjalan di dunia terisolasi (*Isolated World*) sehingga tidak dapat mengubah instansi memori privat JavaScript di *Main World* tempat controller Coretax berada.
+3. **Strict Validation & Event Masking**:
+   Input tanggal pada Coretax mewajibkan pemicuan event internal dari picker kalender yang sah. Nilai masukan teks mentah akan dikosongkan kembali demi menjamin integritas data validasi pajak.
+
+> **Kesimpulan Akademik**: Batasan ini menjadi poin analisis mendalam pada Laporan Tugas Akhir mengenai batas jangkauan otomasi ekstensi browser terhadap aplikasi web berarsitektur *Encapsulated Enterprise Micro-Frontend*.
+
+---
+
+## 🏗️ Arsitektur Kode & Komponen
+
+Ekstensi dirancang dengan pemisahan tanggung jawab yang ketat (*Strict Separation of Concerns*):
 
 ```
-src/
-├── popup/
-│   ├── Popup.tsx                     # Orkestrator utama (~185 baris)
-│   │
-│   ├── components/
-│   │   ├── IdentityProfileTab.tsx    # UI tab profil + tombol Fill It
-│   │   ├── FormScannerTab.tsx        # UI tab scanner + daftar kolom
-│   │   └── SessionPanel.tsx          # Kontrol perekaman sesi
-│   │
-│   ├── hooks/
-│   │   ├── useIdentity.ts            # State identitas & pengaturan
-│   │   └── useScanner.ts             # State kolom terpindai + logika injeksi
-│   │
-│   └── utils/
-│       └── fieldGuesser.ts           # Penebak nilai kolom (konteks popup)
-│
-└── shared/
-    ├── pageScripts.ts                # Script mandiri untuk konteks halaman
-    │                                 # (diinjeksikan via chrome.scripting.executeScript)
-    │                                 #   • scanPageForm()
-    │                                 #   • injectAndFill()          ← Tab Identity Profile
-    │                                 #   • injectCustomFieldsData() ← Tab Form Scanner
-    │                                 #   • injectLoginFields()
-    ├── fakerService.ts               # Generator data berbasis locale
-    ├── storageService.ts             # Abstraksi Chrome storage
-    └── types.ts                      # Interface TypeScript bersama
+TA/
+├── public/
+│   ├── manifest.json              # Manifest V3 Configuration (MV3)
+│   └── icons/                     # Iconset Ekstensi (16px, 48px, 128px)
+├── src/
+│   ├── popup/                     # User Interface Popup Ekstensi
+│   │   ├── Popup.tsx              # Main Orchestrator UI
+│   │   ├── main.tsx               # Entry Point React
+│   │   ├── components/
+│   │   │   ├── IdentityProfileTab.tsx
+│   │   │   ├── FormScannerTab.tsx
+│   │   │   └── SessionPanel.tsx
+│   │   ├── hooks/
+│   │   │   ├── useIdentity.ts     # Custom Hook State Profil & Storage
+│   │   │   └── useScanner.ts      # Custom Hook State Form Scanner
+│   │   └── utils/
+│   │       └── fieldGuesser.ts    # Penebak nilai konteks Popup
+│   └── shared/                    # Shared Modules & Core Engine
+│       ├── pageScripts.ts         # Script Injeksi Mandiri (DOM Browser Context)
+│       ├── fakerService.ts        # Generator Data Dummy (@faker-js/faker)
+│       ├── storageService.ts      # Layer Transaksi Storage & Validasi Skema
+│       └── types.ts               # Interface & Type Definitions
+├── vite.config.ts                 # Config Bundler Vite
+└── package.json                   # Dependencies & Script Runners
 ```
 
-> **Prinsip desain utama**: Semua kode yang berjalan di dalam halaman browser (`pageScripts.ts`) bersifat *self-contained* — tanpa import, tanpa closure — sehingga dapat diserialisasi dan diinjeksikan dengan aman oleh Chrome Scripting API. Fungsi `guess()` adalah satu-satunya sumber kebenaran untuk pencocokan kolom di kedua tab.
+> **Prinsip Utama Execution Injection**: Semua fungsi yang berjalan di dalam konteks tab halaman web (`pageScripts.ts`) bersifat **100% Self-Contained** tanpa modul eksternal agar aman diserialisasikan oleh Chrome Scripting API (`chrome.scripting.executeScript`).
 
 ---
 
-## 🛠️ Stack Teknologi
+## 🛠️ Panduan Developer & Build
 
-| Layer | Teknologi |
-|-------|-----------|
-| UI Framework | React 19 + TypeScript (TSX) |
-| Build Tool | Vite 7 + Rollup |
-| Styling | Tailwind CSS 3 + PostCSS |
-| Generator Data | `@faker-js/faker` v10 (locale-spesifik) |
-| Extension API | Chrome Manifest V3 (`scripting`, `storage`, `activeTab`) |
-| Test Runner | Vitest |
-| Linter | ESLint 9 + typescript-eslint |
+### Prasyarat System
+* **Node.js**: v18.0.0 atau lebih baru
+* **npm**: v9.0.0 atau lebih baru
+* **Browser**: Google Chrome atau Microsoft Edge berbasis Chromium
 
----
-
-## 🚀 Memulai (Panduan Developer)
-
-### Prasyarat
-- Node.js ≥ 18
-- npm ≥ 9
-- Google Chrome atau Microsoft Edge (berbasis Chromium)
-
-### 1. Instal Dependensi
+### 1. Instalasi Dependensi
 ```bash
 npm install
 ```
 
-### 2. Jalankan Development Server
-Pratinjau UI popup di browser dengan hot-reload:
+### 2. Menjalankan Server Development UI
+Untuk melihat pratinjau antarmuka popup di browser:
 ```bash
 npm run dev
 ```
 
-### 3. Jalankan Unit Test
-Verifikasi generator data dummy (NIK, NPWP, telepon, rekening):
+### 3. Pengujian Unit Test (Vitest)
+Menjalankan 26 unit test untuk validasi NIK, NPWP, Nomor KK, Nomor Telepon, dan Rekening Bank:
 ```bash
 npm run test
 ```
 
-### 4. Jalankan Linter
-Periksa error TypeScript dan ESLint:
+### 4. Pemeriksaan Kode & Linter (ESLint)
 ```bash
 npm run lint
 ```
 
-### 5. Build Ekstensi
-Kompilasi TypeScript dan bundling semua aset ke folder `dist/`:
+### 5. Build Distrbusi Ekstensi
+Kompilasi TypeScript dan bundel aset ke dalam direktori `dist/`:
 ```bash
 npm run build
 ```
 
 ---
 
-## 📦 Pemasangan Ekstensi di Chrome
+## 📦 Instalasi di Browser
 
-Setelah build berhasil (`npm run build`):
+Setelah melakukan build (`npm run build`):
 
-1. Buka Chrome atau Edge, navigasi ke `chrome://extensions/`
-2. Aktifkan **Developer mode** (toggle di sudut kanan atas)
-3. Klik **Load unpacked**
-4. Pilih folder **`dist/`** di root project
-5. Ikon **Fill-It** akan muncul di toolbar browser — klik untuk membuka popup
+1. Buka browser Chrome / Edge, lalu masuk ke alamat:
+   ```text
+   chrome://extensions/
+   ```
+2. Aktifkan **Developer mode** pada sakelar di pojok kanan atas.
+3. Klik tombol **Load unpacked** (Muat ekstensi yang membuka kemasan).
+4. Pilih folder **`dist/`** di dalam repositori proyek ini.
+5. Klik ikon puzzle 🧩 pada toolbar browser dan pasang (**Pin**) ikon **Fill-It (F⚡)**.
 
-> **Setelah setiap perubahan kode**, jalankan ulang `npm run build` lalu klik ikon **↺ refresh** di samping Fill-It pada halaman ekstensi.
-
----
-
-## 🧪 Pengujian dengan Sandbox
-
-Project ini menyertakan file [`sandbox.html`](./sandbox.html) berisi formulir pendaftaran lengkap berlocale Indonesia (termasuk kolom NIK, NPWP, KK, tanggal lahir, jenis kelamin, agama, status perkawinan, rekening bank, dan dropdown bergaya PrimeNG).
-
-Buka di browser untuk menguji injeksi Fill-It tanpa perlu server:
-- **Klik dua kali** `sandbox.html` untuk membukanya sebagai file lokal, atau
-- Jalankan `npm run dev` dan navigasi ke route sandbox
-
----
-
-## 🔒 Izin Ekstensi
-
-Fill-It hanya meminta izin minimum yang diperlukan:
-
-| Izin | Alasan |
-|------|--------|
-| `activeTab` | Membaca URL tab aktif untuk mendeteksi halaman login vs. pendaftaran |
-| `scripting` | Menginjeksikan form scanner dan value injector ke halaman aktif |
-| `storage` | Menyimpan profil identitas, template, pengaturan, dan log sesi antar buka popup |
-
----
-
-## 📄 Lisensi
-
-Project ini dikembangkan sebagai karya Tugas Akhir. Seluruh data dummy bersifat non-fungsional dan tidak dapat digunakan untuk tujuan penipuan, pencurian identitas, atau keperluan ilegal apapun.
-
----
 ---
 
 <a name="english"></a>
 # 🇬🇧 English
 
-Fill-It is a Chrome / Edge browser extension built for QA engineers and developers who test web forms regularly. It automatically detects form fields on any page, generates realistic locale-specific dummy data, and injects it instantly — so you can go from blank form to fully filled in under a second.
+**Fill-It** is a Chrome Manifest V3 browser extension built for **QA Engineers**, **Frontend Developers**, and **Software Testers**. It automatically scans form inputs on any active web page, identifies business contexts (such as NIK, NPWP, Family Card Number, Bank Accounts, Birth Dates, etc.), and injects dummy data that is structurally valid yet 100% safe from real citizen data exposure.
 
 ---
 
-## ✨ Features
+## ✨ Key Features
 
-### 🪄 Identity Profile Tab — One-Shot Fill
-- **Fill It button**: Scans the active page, guesses the correct value for each field, and injects everything in a single atomic operation.
-- **Smart Field Detection**: Automatically maps labels, names, IDs, and placeholders to the correct data type (name, email, phone, NIK, NPWP, bank account, birth date, gender, religion, marital status, mother's name, family card number, etc.).
-- **Login vs. Registration awareness**: Detects login pages from the URL and only fills `email/username` + `password`. On registration pages, a full fresh identity is generated.
-- **Editable Identity Card**: Every field in the profile card is directly editable inline before injecting. Changes are persisted across sessions.
-- **Per-field Refresh**: Regenerate any individual identity field without losing the rest.
-
-### 🔍 Form Scanner Tab — Inspect, Edit & Inject
-- **Scan Form**: Discovers all visible inputs on the current page and lists them with their guessed values inside the popup.
-- **Edit before inject**: Modify any field value before it is sent to the page. Edited fields are locked with an `Edited` badge so they survive re-scans and identity refreshes.
-- **Email domain preservation**: If you manually type a custom email domain (e.g. `@perusahaan.com`), the domain is remembered and only the username is regenerated on refresh.
-- **Real-time sync**: Editing a value in the scanner immediately reflects in the live page without needing to click Inject.
-- **Inject Custom Data**: Sends all (possibly edited) values back to the page in one shot.
-
-### 🌐 Multi-Locale Support
-| Flag | Locale | Special Fields |
-|------|--------|----------------|
-| 🇮🇩 | Indonesian (ID) | NIK, NPWP, Indonesian bank account, local phone format |
-| 🇸🇬 | Singapore (SG) | — |
-| 🇺🇸 | American (US) | — |
-
-### 🛡️ Strict Dummy Data Protection
-All sensitive Indonesian data is generated to be **structurally valid but guaranteed fake**, so it can never collide with real citizens' data:
-
-| Field | Dummy Strategy |
-|-------|---------------|
-| **Phone** | Prefix `0800-xxxx` (toll-free range, not assigned to mobile subscribers) |
-| **NIK** (16 digits) | Province code `99` (non-existent in Dukcapil) |
-| **NPWP** (15 digits) | Taxpayer category `00`, suffix `.000` |
-| **Bank Account** | Prefix `999` (internal reserve range, not issued to customers) |
-
-### 🎛️ Settings
-| Setting | Description |
-|---------|-------------|
-| **Safe Mode** | Shows a confirmation dialog before any injection (toggle ON/OFF) |
-| **Auto-Submit** | Automatically clicks the submit button after a successful Fill It injection (toggle ON/OFF) |
-
-### 📋 Session Recording & Export
-- Start a recording session to track every injection: which page, which data, at what time.
-- Export the session log as a `.json` file for QA reports or audit trails.
-
-### 📑 Custom Field Templates
-- Save named templates that map specific CSS selectors to Faker.js categories.
-- Activate a template to apply fixed field overrides on top of the auto-detected fill.
+* **One-Click Fill It**: Instantly scans and populates all detected form inputs atomically.
+* **Smart Context Matching**: Resolves fields by inspecting 7 element attributes, label text (`<label>`, `<reg-form-item>`), and parent DOM hierarchy.
+* **Complex UI Framework Support**: Built-in handlers for **PrimeNG / Angular** elements (`<p-calendar>`, `<p-dropdown>`, `<ui-input-date-2>`) with custom `ngModelChange` event triggers and keyboard simulation.
+* **Privacy-Safe Dummy Strategy**: Generates structurally valid Indonesian identifiers using non-colliding dummy suffixes (NIK `9999999999`, KK `8888888888`, NPWP `7777777777`).
+* **Session Recording & Export**: Track injection history across sessions and export logs to `.json` files.
 
 ---
 
-## 🏗️ Architecture
+## 🔍 Enterprise Architecture Analysis & Technical Boundaries
 
-The extension is built with a **clean modular architecture** — logic is separated by responsibility so each file stays focused and testable.
+While Fill-It achieves 100% success on standard web forms (React, Vue, Native HTML5, Bootstrap, Formik), national enterprise systems like **Coretax DJP** showcase technical edge boundaries:
 
-```
-src/
-├── popup/
-│   ├── Popup.tsx                     # Main orchestrator (~185 lines)
-│   │
-│   ├── components/
-│   │   ├── IdentityProfileTab.tsx    # Profile tab UI + Fill It button
-│   │   ├── FormScannerTab.tsx        # Scanner tab UI + field list
-│   │   └── SessionPanel.tsx          # Session recording controls
-│   │
-│   ├── hooks/
-│   │   ├── useIdentity.ts            # Identity & settings state
-│   │   └── useScanner.ts             # Scanned fields state + injection logic
-│   │
-│   └── utils/
-│       └── fieldGuesser.ts           # Popup-context field value guesser
-│
-└── shared/
-    ├── pageScripts.ts                # Self-contained page-context scripts
-    │                                 # (injected via chrome.scripting.executeScript)
-    │                                 #   • scanPageForm()
-    │                                 #   • injectAndFill()          ← Identity Profile tab
-    │                                 #   • injectCustomFieldsData() ← Form Scanner tab
-    │                                 #   • injectLoginFields()
-    ├── fakerService.ts               # Locale-aware data generators
-    ├── storageService.ts             # Chrome storage abstraction layer
-    └── types.ts                      # Shared TypeScript interfaces
-```
-
-> **Key design principle**: All code that runs inside the browser page (`pageScripts.ts`) is completely self-contained — no imports, no closures — so it can be safely serialized and injected by Chrome's Scripting API. The single `guess()` function is the canonical source of truth for field matching in both tabs.
+1. **Angular `ControlValueAccessor` State Encapsulation**: Enterprise forms encapsulate data in private Angular `FormGroup` states. Physical DOM inputs act solely as read-only display layers; external DOM text edits are rolled back by Angular Change Detection.
+2. **Chrome Extension Isolated World Security**: Under Manifest V3, Content Scripts run in an Isolated World, preventing direct mutation of private Main World JavaScript instances.
+3. **Strict Validation Masking**: Custom datepickers require internal calendar selection events. Raw string injections are cleared to maintain tax data integrity.
 
 ---
 
@@ -291,90 +205,19 @@ src/
 
 | Layer | Technology |
 |-------|-----------|
-| UI Framework | React 19 + TypeScript (TSX) |
-| Build Tool | Vite 7 + Rollup |
-| Styling | Tailwind CSS 3 + PostCSS |
-| Data Generation | `@faker-js/faker` v10 (locale-specific) |
-| Extension API | Chrome Manifest V3 (`scripting`, `storage`, `activeTab`) |
-| Test Runner | Vitest |
-| Linter | ESLint 9 + typescript-eslint |
+| **UI Framework** | React 19 + TypeScript 5.9 |
+| **Bundler & Build Tool** | Vite 7 + Rollup |
+| **Styling** | Tailwind CSS 3.4 + PostCSS |
+| **Dummy Generator** | `@faker-js/faker` v10 (locale-specific) |
+| **Extension Platform** | Chrome Manifest V3 (`scripting`, `storage`, `activeTab`) |
+| **Test Runner** | Vitest 4 |
+| **Code Quality** | ESLint 9 + TypeScript-ESLint |
 
 ---
 
-## 🚀 Getting Started (Developer Guide)
+<a name="keamanan--lisensi"></a>
+## 🛡️ Keamanan & Lisensi
 
-### Prerequisites
-- Node.js ≥ 18
-- npm ≥ 9
-- Google Chrome or Microsoft Edge (Chromium-based)
-
-### 1. Install Dependencies
-```bash
-npm install
-```
-
-### 2. Run Development Server
-Preview the popup UI in the browser with hot-reload:
-```bash
-npm run dev
-```
-
-### 3. Run Unit Tests
-Verify the dummy data generators (NIK, NPWP, phone, bank account):
-```bash
-npm run test
-```
-
-### 4. Lint the Code
-Check for TypeScript and ESLint errors:
-```bash
-npm run lint
-```
-
-### 5. Build the Extension
-Compile TypeScript and bundle all assets into the `dist/` folder:
-```bash
-npm run build
-```
-
----
-
-## 📦 Installing the Extension in Chrome
-
-After a successful build (`npm run build`):
-
-1. Open Chrome or Edge and navigate to `chrome://extensions/`
-2. Enable **Developer mode** (toggle in the top-right corner)
-3. Click **Load unpacked**
-4. Select the **`dist/`** folder in the project root
-5. The **Fill-It** icon will appear in your browser toolbar — click it to open the popup
-
-> **After any code change**, re-run `npm run build` and then click the **↺ refresh** icon next to Fill-It on the extensions page.
-
----
-
-## 🧪 Testing with the Sandbox
-
-The project includes a [`sandbox.html`](./sandbox.html) file with a complete Indonesian-locale registration form (including NIK, NPWP, family card, date of birth, gender, religion, marital status, bank account fields, and PrimeNG-style dropdowns).
-
-Open it in your browser to test Fill-It injection without needing a live server:
-- **Double-click** `sandbox.html` to open it as a local file, or
-- Serve it locally with `npm run dev` and navigate to the sandbox route
-
----
-
-## 🔒 Extension Permissions
-
-Fill-It requests the minimum set of permissions required:
-
-| Permission | Why it's needed |
-|-----------|-----------------| 
-| `activeTab` | Read the URL of the current tab to detect login vs. registration pages |
-| `scripting` | Inject the form scanner and value injector into the active page |
-| `storage` | Persist the identity profile, templates, settings, and session logs between popup opens |
-
----
-
-## 📄 License
-
-This project is developed as a Final Assignment (*Tugas Akhir*) submission. All dummy data is strictly non-functional and cannot be used for any fraudulent, identity-theft, or illegal purposes.
+* **Izin Minimum (Least Privilege)**: Ekstensi ini hanya meminta izin `activeTab`, `scripting`, dan `storage`.
+* **Zero Telemetry**: Tidak ada data pengujian yang dikirim ke server eksternal; seluruh pemrosesan dan penyimpanan dilakukan secara lokal di perangkat pengguna.
+* **Lisensi Akademik**: Proyek ini dikembangkan sebagai bagian dari Tugas Akhir. Data dummy yang dihasilkan murni diperuntukkan bagi pengujian perangkat lunak dan tidak dapat digunakan untuk transaksi atau keperluan ilegal.

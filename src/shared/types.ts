@@ -24,6 +24,7 @@ export interface Identity {
     createdAt: number;
     nik?: string;
     npwp?: string;
+    nomorKK?: string;    // Nomor Kartu Keluarga (16 digit, Privacy-Safe Dummy)
     bankName?: string;
     birthDate?: string;
     password?: string;

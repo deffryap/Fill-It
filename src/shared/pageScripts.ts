@@ -32,7 +32,8 @@ export interface IdentitySnapshot {
     bankAccount: string;
     bankName: string;
     nik: string;
-    npwp: string;
+    nomorKK: string;    // Nomor Kartu Keluarga (16 digit, Privacy-Safe Dummy)
+    npwp: string;       // NPWP-15 terformat, e.g. "99.999.999.9-054.000"
     birthDate: string;
     password: string;
     company: string;
@@ -76,24 +77,34 @@ export function scanPageForm(): PageField[] {
         let labelText = '';
         if (el.id) {
             const linked = document.querySelector<HTMLElement>(`label[for="${CSS.escape(el.id)}"]`);
-            if (linked) labelText = linked.textContent?.trim() || '';
+            if (linked) labelText = linked.textContent?.trim() || linked.getAttribute('arialabel') || '';
         }
         if (!labelText) {
             const wrapped = el.closest('label');
-            if (wrapped) labelText = wrapped.textContent?.trim() || '';
+            if (wrapped) labelText = wrapped.textContent?.trim() || wrapped.getAttribute('arialabel') || '';
         }
         if (!labelText) {
-            const container = el.closest('.field, .form-group, .form-row, td, div');
+            let container = el.closest('reg-form-item, ui-input-date-2, p-calendar, p-dropdown, .field, .form-group, .form-row, tr, td, fieldset');
+            if (!container) {
+                let par: HTMLElement | null = el.parentElement;
+                for (let i = 0; i < 6 && par; i++) {
+                    if (par.querySelector('label, .label, [arialabel]')) {
+                        container = par;
+                        break;
+                    }
+                    par = par.parentElement;
+                }
+            }
             if (container) {
-                const lbl = container.querySelector('label');
-                if (lbl) labelText = lbl.textContent?.trim() || '';
+                const lbl = container.querySelector('label, .label, [arialabel]');
+                if (lbl) labelText = (lbl.getAttribute('arialabel') || lbl.textContent || '').replace(/\s+/g, ' ').trim();
             }
         }
-        if (!labelText) labelText = el.getAttribute('placeholder')?.trim() || '';
+        if (!labelText) labelText = (el.getAttribute('arialabel') || el.getAttribute('aria-label') || el.getAttribute('placeholder') || '').replace(/\s+/g, ' ').trim();
         if (!labelText) labelText = el.name || el.id || `Field ${index + 1}`;
 
         labelText = labelText.replace(/[:*]/g, '').trim();
-        if (labelText.length > 40) labelText = labelText.slice(0, 37) + '...';
+        if (labelText.length > 45) labelText = labelText.slice(0, 42) + '...';
 
         let currentValue = '';
         if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement) {
@@ -180,6 +191,95 @@ export async function injectCustomFieldsData(fields: FieldOverride[]): Promise<v
             return;
         }
 
+        const isInput = el instanceof HTMLInputElement;
+        if (isInput) (el as HTMLInputElement).readOnly = false;
+
+        // PrimeNG / Custom Datepicker wrapper (Coretax ui-input-date-2, p-calendar)
+        const pCal = el.closest('p-calendar, ui-input-date-2, .p-calendar');
+        if (pCal) {
+            const uiDate2 = el.closest('ui-input-date-2') || (pCal.tagName.toLowerCase() === 'ui-input-date-2' ? pCal : pCal.closest('ui-input-date-2'));
+            const inputs = Array.from(pCal.querySelectorAll<HTMLInputElement>('input'));
+            if (el instanceof HTMLInputElement && !inputs.includes(el)) {
+                inputs.push(el);
+            }
+
+            const hostElements = [uiDate2, pCal, el].filter(Boolean) as HTMLElement[];
+
+            for (const targetInput of inputs) {
+                filled.add(targetInput);
+                targetInput.removeAttribute('readonly');
+                targetInput.readOnly = false;
+                targetInput.disabled = false;
+                targetInput.focus();
+
+                // 1. Angular Component Instance Direct Injection (ui-input-date-2 and p-calendar)
+                for (const hostEl of hostElements) {
+                    try {
+                        const win = window as unknown as { ng?: { getComponent?: (e: HTMLElement) => Record<string, unknown> } };
+                        const hostObj = hostEl as unknown as Record<string, unknown>;
+                        const comp = win.ng?.getComponent?.(hostEl) || (hostObj.__ngComponent__ as Record<string, unknown> | undefined);
+                        if (comp) {
+                            const parts = value.split(/[/.-]/);
+                            let y = 1990, m = 0, d = 15;
+                            if (parts.length === 3) {
+                                if (parts[0].length === 4) { y = parseInt(parts[0]); m = parseInt(parts[1]) - 1; d = parseInt(parts[2]); }
+                                else { d = parseInt(parts[0]); m = parseInt(parts[1]) - 1; y = parseInt(parts[2]); }
+                            }
+                            const dt = new Date(y, Math.max(0, Math.min(11, m)), Math.max(1, Math.min(31, d)));
+                            if ('value' in comp) comp.value = dt;
+                            if ('date' in comp) comp.date = dt;
+                            if (typeof comp.writeValue === 'function') {
+                                (comp.writeValue as (v: unknown) => void)(dt);
+                                (comp.writeValue as (v: unknown) => void)(value);
+                            }
+                            if (typeof comp.updateInputfield === 'function') (comp.updateInputfield as () => void)();
+                            if (typeof comp.onModelChange === 'function') (comp.onModelChange as (v: unknown) => void)(dt);
+                            if (typeof comp.onSelect === 'function') (comp.onSelect as (v: unknown) => void)(dt);
+                        }
+                    } catch {
+                        // Fallback
+                    }
+                }
+
+                // 2. Native Value Property Setter
+                const proto = Object.getPrototypeOf(targetInput);
+                const setter = Object.getOwnPropertyDescriptor(proto, 'value')?.set
+                    || Object.getOwnPropertyDescriptor(Object.getPrototypeOf(proto), 'value')?.set;
+                if (setter) setter.call(targetInput, value);
+                else targetInput.value = value;
+
+                // 3. Dispatch Full Event Sequence to targetInput and parent custom host elements
+                for (const hostEl of hostElements) {
+                    hostEl.dispatchEvent(new Event('focus', { bubbles: true }));
+                    hostEl.dispatchEvent(new KeyboardEvent('keydown', { key: '1', bubbles: true }));
+                    hostEl.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+                    hostEl.dispatchEvent(new InputEvent('input', { bubbles: true, composed: true, data: value }));
+                    hostEl.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+                    hostEl.dispatchEvent(new CustomEvent('ngModelChange', { bubbles: true, detail: value }));
+                    hostEl.dispatchEvent(new CustomEvent('onSelect', { bubbles: true, detail: value }));
+                }
+
+                // 4. Character-by-character typing fallback if input was cleared by mask
+                if (!targetInput.value) {
+                    targetInput.value = '';
+                    for (const char of value) {
+                        targetInput.value += char;
+                        targetInput.dispatchEvent(new InputEvent('input', { bubbles: true, composed: true, data: char }));
+                    }
+                    targetInput.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+                }
+
+                targetInput.dispatchEvent(new Event('blur', { bubbles: true }));
+            }
+
+            // Close any open PrimeNG overlay panel cleanly if present
+            const overlay = document.querySelector<HTMLElement>('div.p-datepicker, .p-datepicker-panel, .p-calendar-panel');
+            if (overlay) {
+                document.activeElement?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', keyCode: 27, bubbles: true }));
+            }
+            return;
+        }
+
         // Text / number / tel / email / textarea / password
         const proto = Object.getPrototypeOf(el);
         const setter = Object.getOwnPropertyDescriptor(proto, 'value')?.set
@@ -188,6 +288,7 @@ export async function injectCustomFieldsData(fields: FieldOverride[]): Promise<v
         else (el as HTMLInputElement | HTMLTextAreaElement).value = value;
         el.dispatchEvent(new Event('input', { bubbles: true }));
         el.dispatchEvent(new Event('change', { bubbles: true }));
+        el.dispatchEvent(new Event('blur', { bubbles: true }));
     };
 
     // Inject each pre-resolved field
@@ -271,14 +372,14 @@ export async function injectAndFill(
             trigger.click();
             await delay(150);
             const items = Array.from(document.querySelectorAll<HTMLElement>(
-                '.p-dropdown-panel .p-dropdown-item, .p-dropdown-items .p-dropdown-item, li[role="option"]'
+                '.p-dropdown-panel .p-dropdown-item, .p-dropdown-items .p-dropdown-item, li[role="option"], .p-element[role="option"]'
             ));
             let match = items.find(i => i.textContent?.trim().toLowerCase() === value.toLowerCase())
                 || items.find(i => i.textContent?.trim().toLowerCase().includes(value.toLowerCase()));
             if (!match) {
                 const valid = items.filter(i => {
                     const t = i.textContent?.trim().toLowerCase() || '';
-                    return t && !t.includes('pilih') && !t.includes('choose') && !t.includes('--');
+                    return t && !t.includes('pilih') && !t.includes('choose') && !t.includes('select') && !t.includes('--');
                 });
                 match = valid[Math.floor(Math.random() * valid.length)];
             }
@@ -311,6 +412,95 @@ export async function injectAndFill(
             return;
         }
 
+        const isInput = el instanceof HTMLInputElement;
+        if (isInput) (el as HTMLInputElement).readOnly = false;
+
+        // PrimeNG / Custom Datepicker wrapper (Coretax ui-input-date-2, p-calendar)
+        const pCal = el.closest('p-calendar, ui-input-date-2, .p-calendar');
+        if (pCal) {
+            const uiDate2 = el.closest('ui-input-date-2') || (pCal.tagName.toLowerCase() === 'ui-input-date-2' ? pCal : pCal.closest('ui-input-date-2'));
+            const inputs = Array.from(pCal.querySelectorAll<HTMLInputElement>('input'));
+            if (el instanceof HTMLInputElement && !inputs.includes(el)) {
+                inputs.push(el);
+            }
+
+            const hostElements = [uiDate2, pCal, el].filter(Boolean) as HTMLElement[];
+
+            for (const targetInput of inputs) {
+                filled.add(targetInput);
+                targetInput.removeAttribute('readonly');
+                targetInput.readOnly = false;
+                targetInput.disabled = false;
+                targetInput.focus();
+
+                // 1. Angular Component Instance Direct Injection (ui-input-date-2 and p-calendar)
+                for (const hostEl of hostElements) {
+                    try {
+                        const win = window as unknown as { ng?: { getComponent?: (e: HTMLElement) => Record<string, unknown> } };
+                        const hostObj = hostEl as unknown as Record<string, unknown>;
+                        const comp = win.ng?.getComponent?.(hostEl) || (hostObj.__ngComponent__ as Record<string, unknown> | undefined);
+                        if (comp) {
+                            const parts = value.split(/[/.-]/);
+                            let y = 1990, m = 0, d = 15;
+                            if (parts.length === 3) {
+                                if (parts[0].length === 4) { y = parseInt(parts[0]); m = parseInt(parts[1]) - 1; d = parseInt(parts[2]); }
+                                else { d = parseInt(parts[0]); m = parseInt(parts[1]) - 1; y = parseInt(parts[2]); }
+                            }
+                            const dt = new Date(y, Math.max(0, Math.min(11, m)), Math.max(1, Math.min(31, d)));
+                            if ('value' in comp) comp.value = dt;
+                            if ('date' in comp) comp.date = dt;
+                            if (typeof comp.writeValue === 'function') {
+                                (comp.writeValue as (v: unknown) => void)(dt);
+                                (comp.writeValue as (v: unknown) => void)(value);
+                            }
+                            if (typeof comp.updateInputfield === 'function') (comp.updateInputfield as () => void)();
+                            if (typeof comp.onModelChange === 'function') (comp.onModelChange as (v: unknown) => void)(dt);
+                            if (typeof comp.onSelect === 'function') (comp.onSelect as (v: unknown) => void)(dt);
+                        }
+                    } catch {
+                        // Fallback
+                    }
+                }
+
+                // 2. Native Value Property Setter
+                const proto = Object.getPrototypeOf(targetInput);
+                const setter = Object.getOwnPropertyDescriptor(proto, 'value')?.set
+                    || Object.getOwnPropertyDescriptor(Object.getPrototypeOf(proto), 'value')?.set;
+                if (setter) setter.call(targetInput, value);
+                else targetInput.value = value;
+
+                // 3. Dispatch Full Event Sequence to targetInput and parent custom host elements
+                for (const hostEl of hostElements) {
+                    hostEl.dispatchEvent(new Event('focus', { bubbles: true }));
+                    hostEl.dispatchEvent(new KeyboardEvent('keydown', { key: '1', bubbles: true }));
+                    hostEl.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+                    hostEl.dispatchEvent(new InputEvent('input', { bubbles: true, composed: true, data: value }));
+                    hostEl.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+                    hostEl.dispatchEvent(new CustomEvent('ngModelChange', { bubbles: true, detail: value }));
+                    hostEl.dispatchEvent(new CustomEvent('onSelect', { bubbles: true, detail: value }));
+                }
+
+                // 4. Character-by-character typing fallback if input was cleared by mask
+                if (!targetInput.value) {
+                    targetInput.value = '';
+                    for (const char of value) {
+                        targetInput.value += char;
+                        targetInput.dispatchEvent(new InputEvent('input', { bubbles: true, composed: true, data: char }));
+                    }
+                    targetInput.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+                }
+
+                targetInput.dispatchEvent(new Event('blur', { bubbles: true }));
+            }
+
+            // Close any open PrimeNG overlay panel cleanly if present
+            const overlay = document.querySelector<HTMLElement>('div.p-datepicker, .p-datepicker-panel, .p-calendar-panel');
+            if (overlay) {
+                document.activeElement?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', keyCode: 27, bubbles: true }));
+            }
+            return;
+        }
+
         const proto = Object.getPrototypeOf(el);
         const setter = Object.getOwnPropertyDescriptor(proto, 'value')?.set
             || Object.getOwnPropertyDescriptor(Object.getPrototypeOf(proto), 'value')?.set;
@@ -318,79 +508,140 @@ export async function injectAndFill(
         else (el as HTMLInputElement | HTMLTextAreaElement).value = value;
         el.dispatchEvent(new Event('input', { bubbles: true }));
         el.dispatchEvent(new Event('change', { bubbles: true }));
+        el.dispatchEvent(new Event('blur', { bubbles: true }));
     };
 
     // --- Field value guesser (canonical, single-source-of-truth) ---
-    const guess = (label: string, type: string, placeholder: string, name: string, id: string): string => {
-        const c = `${label} ${name} ${id} ${placeholder}`.toLowerCase();
+    const guess = (
+        haystack: string, type: string, placeholder: string,
+        _name: string, _id: string, el: HTMLElement,
+        insideCalendar = false
+    ): string => {
+        const h = haystack.replace(/\s+/g, ' ').trim();
         const p = placeholder.toLowerCase();
         const locale = identity.locale;
 
-        if (c.includes('email')) return identity.email;
-        if (c.includes('phone') || c.includes('telepon') || c.includes('hp') || c.includes('telp') || type === 'tel') return identity.phone;
-        if (c.includes('fullname') || c.includes('nama lengkap') || (c.includes('name') && !c.includes('first') && !c.includes('last') && !c.includes('bank') && !c.includes('company') && !c.includes('user') && !c.includes('teknik'))) return identity.fullName;
-        if (c.includes('firstname') || c.includes('nama depan')) return identity.firstName;
-        if (c.includes('lastname') || c.includes('nama belakang')) return identity.lastName;
-        if ((c.includes('nik') || c.includes('ktp') || c.includes('induk kependudukan')) && !c.includes('teknik')) return identity.nik;
-        if (c.includes('npwp')) return identity.npwp;
-        if (c.includes('rekening') || c.includes('norek') || (c.includes('account') && !c.includes('bank') && !c.includes('email'))) return identity.bankAccount;
-        if (c.includes('bankname') || c.includes('nama bank') || (c.includes('bank') && !c.includes('account') && !c.includes('rekening') && !c.includes('account'))) return identity.bankName;
-        if (c.includes('address') || c.includes('alamat') || c.includes('jalan')) return identity.address;
-        if (c.includes('city') || c.includes('kota') || c.includes('kabupaten')) return identity.city;
-        if (c.includes('province') || c.includes('provinsi') || c.includes('state')) return identity.province;
-        if (c.includes('postal') || c.includes('zip') || c.includes('kode pos') || c.includes('kodepos')) return identity.zipCode;
-        if (c.includes('kecamatan') || c.includes('district')) return identity.kecamatan;
-        if (c.includes('kelurahan') || c.includes('subdistrict') || c.includes('desa')) return identity.kelurahan;
-        if (c.includes('password') || c.includes('sandi') || type === 'password') return identity.password || 'P@ssw0rd123!';
-        if (c.includes('company') || c.includes('perusahaan') || c.includes('kantor')) return identity.company;
-        if (c.includes('job') || c.includes('pekerjaan') || c.includes('jabatan') || c.includes('occupation')) return identity.jobTitle;
-        if (c.includes('website') || type === 'url') return identity.website;
-        if (c.includes('bio') || c.includes('tentang') || c.includes('deskripsi') || c.includes('about')) return identity.bio;
-        if (c.includes('age') || c.includes('umur') || c.includes('usia')) return String(Math.floor(Math.random() * 43) + 18);
-        if (c.includes('salary') || c.includes('gaji') || c.includes('income')) return String((Math.floor(Math.random() * 17) + 4) * 500000);
-        if (c.includes('birthplace') || c.includes('tempat lahir') || c.includes('tempat_lahir')) {
-            const cities = ['Jakarta', 'Bandung', 'Surabaya', 'Semarang', 'Medan', 'Makassar', 'Yogyakarta', 'Malang', 'Palembang', 'Tangerang'];
-            return locale === 'id_ID' ? cities[Math.floor(Math.random() * cities.length)] : 'New York';
-        }
-        if (c.includes('birthdate') || c.includes('tanggal lahir') || c.includes('date of birth') || c.includes('bday') || c.includes('dd-mm-yyyy')) {
-            let bd = identity.birthDate || '1990-01-01';
-            if (p.includes('dd-mm-yyyy') || p.includes('dd/mm/yyyy')) {
-                const pts = bd.split('-');
-                if (pts.length === 3) bd = `${pts[2]}-${pts[1]}-${pts[0]}`;
-            }
-            return bd;
-        }
-        if (c.includes('agama') || c.includes('religion')) {
-            const rel = ['Islam', 'Kristen', 'Katolik', 'Hindu', 'Buddha', 'Khonghucu'];
-            return rel[Math.floor(Math.random() * rel.length)];
-        }
-        if (c.includes('gender') || c.includes('jenis kelamin') || c.includes('sex') || c.includes('kelamin')) {
-            return Math.random() > 0.5 ? 'Laki-laki' : 'Perempuan';
-        }
-        if (c.includes('marriage') || c.includes('pernikahan') || c.includes('marital') || c.includes('kawin') || c.includes('status perkawinan')) {
-            const st = ['Belum Kawin', 'Kawin', 'Cerai Hidup', 'Cerai Mati'];
-            return st[Math.floor(Math.random() * st.length)];
-        }
-        if (c.includes('ibu kandung') || c.includes('ibu') || c.includes('mother')) {
+        if (/\b(email|e-mail|mail)\b/i.test(h)) return identity.email;
+        if (/\b(phone|telepon|telp|handphone|hp|nohp|no_hp|mobile)\b/i.test(h) || type === 'tel') return identity.phone;
+        if (/\b(fullname|nama_lengkap|namalengkap|nama_wajib_pajak|namawajibpajak|taxpayername|taxpayer_name)\b/i.test(h) || (/\b(name|nama)\b/i.test(h) && !/\b(first|last|bank|company|user|teknik|mother|ibu|gadis)\b/i.test(h))) return identity.fullName;
+        if (/\b(firstname|nama_depan|namadepan)\b/i.test(h)) return identity.firstName;
+        if (/\b(lastname|nama_belakang|namabelakang)\b/i.test(h)) return identity.lastName;
+
+        // ── Nama Ibu Kandung ──────────────────────────────────────────────
+        if (/\b(mother|mothersname|mother_name|ibu_kandung|ibukandung|nama_ibu|nama\s*ibu|nama_ibu_kandung|nama\s*ibu\s*kandung|gadis_ibu_kandung)\b/i.test(h) || /\b(ibu)\b/i.test(h)) {
             const fn = ['Siti', 'Dewi', 'Sri', 'Mega', 'Putri', 'Indah', 'Lestari', 'Kartika', 'Rini', 'Wati'];
             const ln = ['Suryani', 'Puspitasari', 'Utami', 'Lestari', 'Wulandari', 'Hidayah', 'Rahayu', 'Wijaya'];
             return `${fn[Math.floor(Math.random() * fn.length)]} ${ln[Math.floor(Math.random() * ln.length)]}`;
         }
-        if (c.includes('familycard') || c.includes('kartu keluarga') || c.includes('familycardnumber') || (c.includes('kk') && (c.includes('nomor') || c.includes('no ')))) {
-            let kk = '999999';
-            for (let i = 0; i < 10; i++) kk += Math.floor(Math.random() * 10);
-            return kk;
+
+        // ── NPWP (diutamakan sebelum NIK agar tidak tumpang tindih) ──────────
+        if (/\b(npwp|no_npwp|no\.?\s*npwp|nomor_npwp|nomor\s*npwp|tax_id|tax_number|tin|pajak)\b/i.test(h)) {
+            const maxLen = (el as HTMLInputElement).maxLength;
+            const isFormatted15 = maxLen === 15 || maxLen === 20 || p.includes('.') || p.includes('-');
+            if (isFormatted15) {
+                if (identity.npwp && (identity.npwp.includes('.') || identity.npwp.length === 15)) {
+                    return identity.npwp;
+                }
+                return '99.999.999.9-054.000';
+            }
+            if (identity.npwp) {
+                return identity.npwp;
+            }
+            const nikRegionCode = (identity.nik && identity.nik.length >= 6)
+                ? identity.nik.slice(0, 6)
+                : '310101';
+            return `${nikRegionCode}7777777777`;
         }
-        if (c.includes('familystatus') || c.includes('hubungan keluarga') || c.includes('family member') || c.includes('familystatus')) {
+
+        // ── Nomor KK ─────────────────────────────────────────────────────────
+        if (/\b(kk|no_kk|nokk|no\.?\s*kk|nomor_kk|nomor\s*kk|kartu_keluarga|kartu\s*keluarga|no_kartu_keluarga|no\.?\s*kartu\s*keluarga|nomor_kartu_keluarga|nomor\s*kartu\s*keluarga|family_card|family_card_number|familycardnumber)\b/i.test(h)) {
+            return identity.nomorKK || (() => {
+                const _pKK = ['11','12','13','14','15','16','17','18','19','21','31','32','33','34','35','36','51','52','53','61','62','63','64','65','71','72','73','74','75','76','81','82','91','92','93','94','95','96'];
+                return `${_pKK[Math.floor(Math.random() * _pKK.length)]}01018888888888`;
+            })();
+        }
+
+        // ── NIK ───────────────────────────────────────────────────────────────
+        if (/\b(nik|no_nik|no\.?\s*nik|nomor_nik|nomor\s*nik|no_ktp|no\.?\s*ktp|nomor_ktp|nomor\s*ktp|noktp|no_identitas|no\.?\s*identitas|nomor_identitas|nomor\s*identitas|national_id|kepala_unit_pajak_keluarga|kepala_keluarga|kepala\s*unit)\b/i.test(h)) {
+            return identity.nik;
+        }
+
+        // ── Tempat Lahir ──────────────────────────────────────────────────
+        if (/\b(birthplace|birth_place|place_of_birth|placeofbirth|tempat_lahir|tempat\s*lahir|tempatlahir|tplahir|tpt_lahir)\b/i.test(h)) {
+            const cities = ['Kota Jakarta Utara', 'Kota Bandung', 'Kota Surabaya', 'Kota Semarang', 'Kota Medan', 'Kota Makassar', 'Kota Yogyakarta', 'Kota Malang', 'Kota Tangerang Selatan'];
+            return locale === 'id_ID' ? cities[Math.floor(Math.random() * cities.length)] : 'New York';
+        }
+
+        // ── Tanggal Lahir ─────────────────────────────────────────────────
+        const isDateField = insideCalendar
+            || /\b(birthdate|birth\s*date|date\s*of\s*birth|date_of_birth|dateofbirth|tanggal_lahir|tanggal\s*lahir|tanggallahir|tgl_lahir|tgl\s*lahir|tgllahir|bday|dob)\b/i.test(h)
+            || p.includes('dd-mm-yyyy') || p.includes('dd/mm/yyyy') || p.includes('yyyy-mm-dd')
+            || h.toLowerCase().includes('tanggal lahir') || h.toLowerCase().includes('date of birth') || h.toLowerCase().includes('tgl lahir');
+        if (isDateField) {
+            const bd = identity.birthDate || '1990-01-15';
+            const pts = bd.split('-');
+            if (type === 'date' || (el instanceof HTMLInputElement && el.type === 'date')) {
+                return bd;
+            }
+            if (pts.length === 3) {
+                if (p.includes('dd-mm-yyyy') || p.includes('dd-mm') || h.includes('dd-mm')) {
+                    return `${pts[2]}-${pts[1]}-${pts[0]}`;
+                }
+                if (p.includes('yyyy-mm-dd') || p.includes('yyyy/mm/dd')) {
+                    return bd;
+                }
+                return `${pts[2]}/${pts[1]}/${pts[0]}`;
+            }
+            return bd;
+        }
+
+        // ── Status Perkawinan ─────────────────────────────────────────────
+        if (/\b(marriage|marital|pernikahan|kawin|status_perkawinan|status\s*perkawinan|statusperkawinan|status_kawin|marriagestatus)\b/i.test(h)) {
+            const st = ['Belum Kawin', 'Kawin', 'Cerai Hidup', 'Cerai Mati'];
+            return st[Math.floor(Math.random() * st.length)];
+        }
+
+        // ── Status Hubungan Keluarga ──────────────────────────────────────
+        if (/\b(familystatus|family_status|family_member|family_member_status|familymemberstatus|hubungan_keluarga|hubungan\s*keluarga|status_hubungan_keluarga|status\s*hubungan\s*keluarga)\b/i.test(h)) {
             const fs = ['Kepala Keluarga', 'Suami', 'Istri', 'Anak', 'Mertua', 'Orang Tua'];
             return fs[Math.floor(Math.random() * fs.length)];
         }
-        if (c.includes('taxpayertype') || c.includes('jenis wajib pajak') || c.includes('taxpayer type')) return 'Orang Pribadi atau Warisan Belum Terbagi';
-        if (c.includes('countryoforigin') || c.includes('negara asal') || c.includes('country of origin')) return 'Indonesia';
-        if (c.includes('worktype') || c.includes('jenis pekerjaan') || c.includes('work type')) {
-            const jobs = ['Karyawan Swasta', 'PNS', 'Wiraswasta', 'Profesional', 'Lainnya'];
+
+        // ── Jenis Pekerjaan ───────────────────────────────────────────────
+        if (/\b(worktype|work_type|jenis_pekerjaan|jenis\s*pekerjaan|jenispekerjaan|job|pekerjaan|jabatan|occupation)\b/i.test(h)) {
+            const jobs = ['Karyawan Swasta', 'PNS', 'Wiraswasta', 'Profesional', 'Industri', 'Lainnya'];
             return jobs[Math.floor(Math.random() * jobs.length)];
         }
+
+        // ── Jenis Wajib Pajak ─────────────────────────────────────────────
+        if (/\b(taxpayertype|taxpayer_type|jenis_wajib_pajak|jenis\s*wajib\s*pajak|jeniswajibpajak)\b/i.test(h)) return 'Orang Pribadi atau Warisan Belum Terbagi';
+
+        // ── Negara Asal ───────────────────────────────────────────────────
+        if (/\b(countryoforigin|country_of_origin|negara_asal|negara\s*asal|negaraasal|country)\b/i.test(h)) return 'Indonesia';
+
+        // ── Kategori Individu ─────────────────────────────────────────────
+        if (/\b(individualcategory|individual_category|kategori_individu|kategori\s*individu|kategoriindividu)\b/i.test(h)) return 'Orang Pribadi';
+
+        if (/\b(rekening|norek|no_rek|accountnumber)\b/i.test(h) || (/\baccount\b/i.test(h) && !/\b(bank|email)\b/i.test(h))) return identity.bankAccount;
+        if (/\b(bankname|nama_bank|namabank)\b/i.test(h) || (/\bbank\b/i.test(h) && !/\b(account|rekening)\b/i.test(h))) return identity.bankName;
+        if (/\b(address|alamat|jalan)\b/i.test(h)) return identity.address;
+        if (/\b(city|kota|kabupaten)\b/i.test(h)) return identity.city;
+        if (/\b(province|provinsi|state)\b/i.test(h)) return identity.province;
+        if (/\b(postal|zip|zipcode|zip_code|kodepos|kode_pos|kode\s*pos|postcode|post_code|post\s*code)\b/i.test(h)) return identity.zipCode;
+        if (/\bkecamatan\b|\bdistrict\b/i.test(h)) return identity.kecamatan;
+        if (/\bkelurahan\b|\bsubdistrict\b|\bdesa\b/i.test(h)) return identity.kelurahan;
+        if (/\b(password|sandi)\b/i.test(h) || type === 'password') return identity.password || 'P@ssw0rd123!';
+        if (/\b(company|perusahaan|kantor)\b/i.test(h)) return identity.company;
+        if (/\b(job|pekerjaan|jabatan|occupation)\b/i.test(h)) return identity.jobTitle;
+        if (/\bwebsite\b/i.test(h) || type === 'url') return identity.website;
+        if (/\b(bio|tentang|deskripsi|about)\b/i.test(h)) return identity.bio;
+        if (/\b(age|umur|usia)\b/i.test(h)) return String(Math.floor(Math.random() * 43) + 18);
+        if (/\b(salary|gaji|income)\b/i.test(h)) return String((Math.floor(Math.random() * 17) + 4) * 500000);
+        if (/\b(agama|religion)\b/i.test(h)) {
+            const rel = ['Islam', 'Kristen', 'Katolik', 'Hindu', 'Buddha', 'Khonghucu'];
+            return rel[Math.floor(Math.random() * rel.length)];
+        }
+        if (/\b(gender|jenis_kelamin|kelamin|sex)\b/i.test(h)) return Math.random() > 0.5 ? 'Laki-laki' : 'Perempuan';
         if (type === 'textarea') return 'Form testing data.';
         return '';
     };
@@ -420,29 +671,59 @@ export async function injectAndFill(
         for (const el of Array.from(inputs)) {
             if (filled.has(el)) continue;
 
-            // Resolve label text
-            let labelText = '';
+            // ── Build Haystack from 7 attributes + label text + parent context ──
+            const haystackParts: string[] = [];
+
+            // Helper: normalize multi-line/extra-space arialabel or text
+            const norm = (s: string) => s.replace(/\s+/g, ' ').trim();
+
+            // 1. Atribut elemen utama
+            const attrKeys = ['id', 'name', 'placeholder', 'aria-label', 'arialabel', 'title', 'data-testid', 'autocomplete'];
+            attrKeys.forEach(k => { const v = el.getAttribute(k); if (v) haystackParts.push(norm(v)); });
+
+            // 2. Label via for="id"
             if (el.id) {
-                const lbl = document.querySelector<HTMLElement>(`label[for="${CSS.escape(el.id)}"]`);
-                if (lbl) labelText = lbl.textContent?.trim() || '';
-            }
-            if (!labelText) {
-                const pLbl = el.closest('label');
-                if (pLbl) labelText = pLbl.textContent?.trim() || '';
-            }
-            if (!labelText) {
-                const cont = el.closest('.field, .form-group, .form-row, td, div');
-                if (cont) {
-                    const lbl = cont.querySelector('label');
-                    if (lbl) labelText = lbl.textContent?.trim() || '';
+                const linkedLbl = document.querySelector<HTMLElement>(`label[for="${CSS.escape(el.id)}"]`);
+                if (linkedLbl) {
+                    const lv = norm(linkedLbl.getAttribute('arialabel') || linkedLbl.textContent || '');
+                    if (lv) haystackParts.push(lv);
                 }
             }
-            if (!labelText) labelText = el.getAttribute('placeholder')?.trim() || '';
-            if (!labelText) labelText = el.name || el.id || '';
-            labelText = labelText.replace(/[:*]/g, '').trim();
+            // 3. Wrapping label
+            const wrapLbl = el.closest('label');
+            if (wrapLbl) {
+                const lv = norm(wrapLbl.getAttribute('arialabel') || wrapLbl.textContent || '');
+                if (lv) haystackParts.push(lv);
+            }
 
+            // 4. Ancestor container label (reg-form-item, p-calendar, ui-input-date-2, .field, etc.)
+            let formItemContainer = el.closest('reg-form-item, ui-input-date-2, p-calendar, p-dropdown, .field, .form-group, .form-row, tr, td, fieldset');
+            if (!formItemContainer) {
+                let par: HTMLElement | null = el.parentElement;
+                for (let i = 0; i < 6 && par; i++) {
+                    if (par.querySelector('label, .label, [arialabel]')) {
+                        formItemContainer = par;
+                        break;
+                    }
+                    par = par.parentElement;
+                }
+            }
+            if (formItemContainer) {
+                const cLbl = formItemContainer.querySelector('label, .label, [arialabel]');
+                if (cLbl) {
+                    const txt = norm(cLbl.getAttribute('arialabel') || cLbl.textContent || '');
+                    if (txt) haystackParts.push(txt);
+                }
+                // Also grab arialabel from the container itself
+                const ctxt = norm(formItemContainer.getAttribute('arialabel') || '');
+                if (ctxt) haystackParts.push(ctxt);
+            }
+
+            const haystack = haystackParts.filter(Boolean).join(' ');
             const type = el instanceof HTMLInputElement ? el.type : el.tagName.toLowerCase();
-            const val = guess(labelText, type, el.getAttribute('placeholder') || '', el.name || '', el.id || '');
+            // Mark p-calendar inputs so the date guesser knows
+            const isInsideCalendar = !!el.closest('p-calendar, ui-input-date-2');
+            const val = guess(haystack, type, el.getAttribute('placeholder') || '', el.name || '', el.id || '', el, isInsideCalendar);
 
             if (val) {
                 el.focus();

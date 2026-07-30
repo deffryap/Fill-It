@@ -53,9 +53,16 @@ export function IdentityProfileTab({
 }: IdentityProfileTabProps) {
     const [status, setStatus] = useState<'idle' | 'injecting' | 'done' | 'error'>('idle');
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
+    const [pendingFill, setPendingFill] = useState(false);
 
     // ─── Fill It (one-shot identity inject) ─────────────────────────────────
-    const handleFillIt = async () => {
+    const handleFillIt = async (skipConfirm = false) => {
+        // Safe Mode: show in-popup confirmation instead of window.confirm()
+        if (settings.safeMode && !skipConfirm) {
+            setPendingFill(true);
+            return;
+        }
+        setPendingFill(false);
         setStatus('injecting');
         let id = identity;
         let isLogin = false;
@@ -98,11 +105,6 @@ export function IdentityProfileTab({
                     activeTab.url.includes('chrome.google.com/webstore'))
             ) {
                 throw new Error('System pages are protected and cannot be auto-filled.');
-            }
-
-            if (settings.safeMode) {
-                const confirmed = confirm('Are you sure you want to autofill the data on this page?');
-                if (!confirmed) { setStatus('idle'); return; }
             }
 
             if (isLogin && id) {
@@ -150,6 +152,7 @@ export function IdentityProfileTab({
                     bankAccount: id.bankAccount ?? '',
                     bankName: id.bankName ?? '',
                     nik: id.nik ?? '',
+                    nomorKK: id.nomorKK ?? '',
                     npwp: id.npwp ?? '',
                     birthDate: id.birthDate ?? '',
                     password: id.password ?? 'P@ssw0rd123!',
@@ -200,13 +203,13 @@ export function IdentityProfileTab({
     return (
         <>
             {/* ── Fill It Button ────────────── */}
-            <div className="px-4 pt-3 pb-3">
+            <div className="px-4 pt-3 pb-3 space-y-2">
                 <button
-                    onClick={handleFillIt}
-                    disabled={status === 'injecting'}
+                    onClick={() => handleFillIt()}
+                    disabled={status === 'injecting' || pendingFill}
                     className={`w-full py-3.5 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98] disabled:opacity-60 font-semibold text-[13px] ${
                         status === 'error'
-                            ? 'bg-red-600 text-white animate-shake'
+                            ? 'bg-red-600 text-white'
                             : status === 'done'
                             ? 'bg-green-600 text-white'
                             : 'bg-neutral-900 hover:bg-neutral-700 text-white'
@@ -235,6 +238,29 @@ export function IdentityProfileTab({
                         </>
                     )}
                 </button>
+
+                {/* ── Safe Mode Inline Confirmation ── */}
+                {pendingFill && (
+                    <div className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg bg-amber-50 border border-amber-200">
+                        <span className="text-[11px] font-medium text-amber-800">
+                            Autofill this page?
+                        </span>
+                        <div className="flex gap-1.5 shrink-0">
+                            <button
+                                onClick={() => setPendingFill(false)}
+                                className="px-2.5 py-1 text-[11px] font-semibold text-neutral-600 bg-white border border-neutral-200 rounded-md hover:bg-neutral-50 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => handleFillIt(true)}
+                                className="px-2.5 py-1 text-[11px] font-semibold text-white bg-neutral-900 rounded-md hover:bg-neutral-700 transition-colors"
+                            >
+                                Confirm
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* ── Session Panel ─────────────── */}
