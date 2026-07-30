@@ -146,11 +146,10 @@ function Popup() {
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`py-2.5 mr-4 text-[12px] font-semibold transition-colors border-b-2 outline-none ${
-                            activeTab === tab
+                        className={`py-2.5 mr-4 text-[12px] font-semibold transition-colors border-b-2 outline-none ${activeTab === tab
                                 ? 'border-neutral-900 text-neutral-900'
                                 : 'border-transparent text-neutral-400 hover:text-neutral-600'
-                        }`}
+                            }`}
                     >
                         {tab === 'profile' ? 'Identity Profile' : 'Form Scanner'}
                     </button>
@@ -192,7 +191,6 @@ function Popup() {
             {/* ── Footer ──────────────────── */}
             <div className="mt-auto px-4 py-3 border-t border-neutral-200 flex items-center justify-between bg-white">
                 <span className="text-neutral-400 text-[10px] font-medium">v1.0.0</span>
-                <span className="text-neutral-400 text-[10px] font-medium">© 2026 Fill-It</span>
             </div>
         </div>
     );
