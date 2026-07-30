@@ -192,7 +192,7 @@ function Popup() {
             {/* ── Footer ──────────────────── */}
             <div className="mt-auto px-4 py-3 border-t border-neutral-200 flex items-center justify-between bg-white">
                 <span className="text-neutral-400 text-[10px] font-medium">v1.0.0</span>
-                <span className="text-neutral-400 text-[10px] font-medium">© 2025 Fill-It</span>
+                <span className="text-neutral-400 text-[10px] font-medium">© 2026 Fill-It</span>
             </div>
         </div>
     );
