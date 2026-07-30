@@ -24,14 +24,10 @@ export const generateIndonesianPhone = (): string => {
         '0881', '0882', '0883', '0884', '0885', '0886', '0887', '0888', '0889',  // Smartfren
     ];
     const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
-    // Privacy-Safe Dummy Suffix Strategy:
-    // Uses "0000" + 4 random digits (total 12 digits, e.g. "081200001234")
+    // Privacy-Safe Fixed Dummy Suffix Strategy:
+    // Uses "00000000" (total 12 digits, e.g. "081200000000")
     // Passes all mobile operator regex validation while guaranteeing zero collision with active SIM cards.
-    let suffix = '0000';
-    for (let i = 0; i < 4; i++) {
-        suffix += Math.floor(Math.random() * 10);
-    }
-    return `${prefix}${suffix}`;
+    return `${prefix}00000000`;
 };
 
 // ─── Dynamic Region Code Helper (38 Provinsi Indonesia) ──────────────────────

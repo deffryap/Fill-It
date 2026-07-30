@@ -6,14 +6,16 @@
 [![React 19](https://img.shields.io/badge/React-19.2-61dafb.svg?style=flat-square)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg?style=flat-square)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-7.3-646cff.svg?style=flat-square)](https://vitejs.dev/)
-[![License](https://img.shields.io/badge/License-Academic_TA-green.svg?style=flat-square)](#-lisensi--license)
+[![License](https://img.shields.io/badge/License-Academic_TA-green.svg?style=flat-square)](#-keamanan--lisensi)
 
 ---
 
 ## 📌 Daftar Isi / Table of Contents
 - [🇮🇩 Bahasa Indonesia](#-bahasa-indonesia)
   - [Fitur Utama](#-fitur-utama)
-  - [Strategi Dummy Privacy-Safe](#-strategi-dummy-data-privacy-safe)
+  - [Lingkungan Pengujian Sandbox & Demo Live (SUS)](#-lingkungan-pengujian-sandbox--demo-live-sus)
+  - [Multi-Locale & Strict Academic Boundary](#-multi-locale--strict-academic-boundary)
+  - [Strategi Dummy Data Privacy-Safe](#-strategi-dummy-data-privacy-safe)
   - [Analisis Arsitektur Enterprise & Batasan Teknis](#-analisis-arsitektur-enterprise--batasan-teknis)
   - [Arsitektur Kode & Komponen](#-arsitektur-kode--komponen)
   - [Panduan Developer & Build](#-panduan-developer--build)
@@ -22,8 +24,7 @@
   - [Key Features](#-key-features)
   - [Privacy-Safe Dummy Strategy](#-privacy-safe-dummy-strategy)
   - [Enterprise Architecture Analysis & Technical Boundaries](#-enterprise-architecture-analysis--technical-boundaries)
-  - [Architecture](#-architecture)
-  - [Developer Setup](#-developer-setup)
+  - [Tech Stack](#-tech-stack)
 - [🛡️ Keamanan & Lisensi](#%EF%B8%8F-keamanan--lisensi)
 
 ---
@@ -40,7 +41,7 @@
 ### 1. 🪄 Identity Profile Tab (Injeksi 1-Klik)
 * **One-Click Fill It**: Memindai seluruh input di halaman aktif dan mengisinya secara atomik.
 * **Deteksi Konteks Cerdas**: Mengidentifikasi kolom berdasarkan atribut (`id`, `name`, `placeholder`, `aria-label`, `data-testid`), pembungkus label (`<label>`, `<reg-form-item>`), dan hierarki kontainer parent.
-* **Dukungan Kompleksitas UI Modern**: Penanganan khusus untuk komponen **PrimeNG / Angular** (`<p-calendar>`, `<p-dropdown>`, `<ui-input-date-2>`) termasuk pengiriman event kustom `ngModelChange`, simulasi keyboard, dan penanganan atribut `readonly`.
+* **Dukungan Kompleksitas UI Modern**: Penanganan khusus untuk komponen **PrimeNG / Angular** (`<p-calendar>`, `<p-dropdown>`, `<ui-input-date-2>`), elemen `<select>` dropdown, serta radio/checkbox button termasuk pengiriman event kustom `ngModelChange`, simulasi keyboard, dan penanganan atribut `readonly`.
 * **Deteksi Halaman Hibrida**: Otomatis membedakan mode **Login** (hanya menginjeksikan kredensial) dan mode **Registrasi** (menggenerasi profil identitas lengkap baru).
 
 ### 2. 🔍 Form Scanner Tab (Pindai, Edit & Injeksi)
@@ -48,13 +49,30 @@
 * **Preservasi Per-Field**: Kolom yang diedit manual diberi lencana `Edited` agar nilainya tidak tertimpa saat pemindaian ulang.
 * **Domain Email Kustom**: Mengingat domain email kustom (misal `@perusahaan.com`) dan hanya memperbarui username saat refresh identitas.
 
-### 3. 🌐 Multi-Locale & Strict Academic Boundary
-Sistem menerapkan batasan tegas (*strict locale boundary*) antara fitur standar bawaan Faker.js vs Modul Ekstensi Indonesia (TA):
-* **Locale Non-Indonesia (`en_US`, `en_SG`)**: Hanya menggunakan fitur standar bawaan Faker.js (Nama, Email, Telepon Internasional, Alamat, Perusahaan, dll.). Seluruh data administratif Indonesia (NIK, NPWP, No. KK, Ibu Kandung, dll.) **secara ketat diisolasi (disabled)** dan tidak akan dibocorkan.
+---
+
+## 🧪 Lingkungan Pengujian Sandbox & Demo Live (SUS)
+
+Proyek ini menyediakan halaman pengujian khusus **Sandbox Studio** berbasis UI Enterprise Modern yang siap digunakan untuk pengujian pengguna (*System Usability Scale / SUS Testing*):
+
+* **Akses Lokal**: Buka file [`sandbox.html`](sandbox.html) langsung di browser Anda.
+* **Akses Online Publik (GitHub Pages)**:
+  `https://deffryap.github.io/fill-it/sandbox.html` (atau `https://deffryap.github.io/fill-it/`)
+
+Halaman pengujian ini mencakup formulir pendaftaran Wajib Pajak 18+ kolom, kalender custom, elemen dropdown `<select>`, serta tab terpisah antara mode Register dan Login.
+
+---
+
+## 🌐 Multi-Locale & Strict Academic Boundary
+
+Sistem menerapkan batasan tegas (*strict locale boundary*) antara fitur standar bawaan Faker.js vs Modul Ekstensi Indonesia (Tugas Akhir):
+
+* **Locale Non-Indonesia (`en_US`, `en_SG`)**: Hanya menggunakan fitur standar bawaan Faker.js (Nama, Email, Telepon Internasional, Alamat, Perusahaan, Job Title, Bio, Website). Seluruh data administratif Indonesia (NIK, NPWP, No. KK, Ibu Kandung, dll.) **secara ketat diisolasi (disabled)** dan tidak akan dibocorkan.
 * **Locale Indonesia (`id_ID`) (Modul Kustom Tugas Akhir)**:
   * **NIK (16 Digit)**: Diturunkan dari kode provinsi resmi 38 provinsi di Indonesia (`[6-Digit Wilayah][9999999999]`).
   * **Nomor KK (16 Digit)**: Nomor Kartu Keluarga dengan akhiran anti-bentrokan data (`[6-Digit Wilayah][8888888888]`).
   * **NPWP-16 & NPWP-15**: Mendukung format NPWP 16-digit berbasis NIK (PMK 136/2023) dan format 15-digit terformat (`99.999.999.9-054.000`).
+  * **No. Telepon Seluler BRTI**: Awalan operator seluler resmi Indonesia (`0812`, `0857`, `0818`, `0896`, dll.) dikombinasikan dengan blok suffix tetap `00000000` (contoh: `081200000000`, `085700000000`).
   * **Rekening Bank Lokal**: Bank BCA, Mandiri, BNI, dan BRI dengan penomoran berstandar (prefix `999`).
   * **Alamat RT/RW**: Format alamat jalan lengkap dengan kelurahan, kecamatan, kota, provinsi, dan kode pos Indonesia.
 
@@ -69,7 +87,7 @@ Semua generator data Indonesia menggunakan algoritma **Privacy-Safe & Anti-Colli
 | **NIK** (16-Digit) | `[6-Digit Wilayah Valid][9999999999]` | Tanggal/Bulan `99` tidak mungkin ada pada kalender resmi Dukcapil. |
 | **Nomor KK** (16-Digit) | `[6-Digit Wilayah Valid][8888888888]` | Suffix `8888888888` berbeda dari NIK untuk mencegah tabrakan data antar-kolom. |
 | **NPWP-16** (16-Digit) | `[6-Digit Wilayah NIK][7777777777]` | Mengikuti aturan PMK 136/2023 (NPWP berbasis NIK) dengan suffix `7777777777`. |
-| **No. Telepon** | `0812-0000-xxxx`, `0857-0000-xxxx` | Awalan prefix seluler BRTI + Blok Suffix `0000` (Jaminan 100% Anti-Collision dengan kartu SIM aktif). |
+| **No. Telepon** | `081200000000`, `085700000000` | Awalan prefix seluler BRTI + Blok Suffix `00000000` (Jaminan 100% Anti-Collision dengan kartu SIM aktif). |
 | **No. Rekening** | `999xxxxxxx` | Awalan `999` reserved sebagai nomor uji dummy internal perbankan. |
 
 ---
@@ -116,6 +134,9 @@ TA/
 │       ├── fakerService.ts        # Generator Data Dummy (@faker-js/faker)
 │       ├── storageService.ts      # Layer Transaksi Storage & Validasi Skema
 │       └── types.ts               # Interface & Type Definitions
+├── PRIVACY.md                     # Kebijakan Privasi Resmi Chrome Web Store
+├── fill-it-v1.0.0.zip             # Bundel Paket Rilis Chrome Web Store
+├── sandbox.html                   # Lingkungan Pengujian Form Lokal & Live
 ├── vite.config.ts                 # Config Bundler Vite
 └── package.json                   # Dependencies & Script Runners
 ```
@@ -143,7 +164,7 @@ npm run dev
 ```
 
 ### 3. Pengujian Unit Test (Vitest)
-Menjalankan 26 unit test untuk validasi NIK, NPWP, Nomor KK, Nomor Telepon, dan Rekening Bank:
+Menjalankan 27 unit test untuk validasi NIK, NPWP, Nomor KK, Nomor Telepon, Rekening Bank, dan isolasi locale:
 ```bash
 npm run test
 ```
@@ -153,10 +174,11 @@ npm run test
 npm run lint
 ```
 
-### 5. Build Distrbusi Ekstensi
-Kompilasi TypeScript dan bundel aset ke dalam direktori `dist/`:
+### 5. Build Distribusi Ekstensi & ZIP CWS
+Kompilasi TypeScript, bundel aset ke `dist/`, dan buat paket kompresi rilis:
 ```bash
 npm run build
+powershell -Command "Compress-Archive -Path dist\* -DestinationPath fill-it-v1.0.0.zip -Force"
 ```
 
 ---
@@ -187,8 +209,8 @@ Setelah melakukan build (`npm run build`):
 
 * **One-Click Fill It**: Instantly scans and populates all detected form inputs atomically.
 * **Smart Context Matching**: Resolves fields by inspecting 7 element attributes, label text (`<label>`, `<reg-form-item>`), and parent DOM hierarchy.
-* **Complex UI Framework Support**: Built-in handlers for **PrimeNG / Angular** elements (`<p-calendar>`, `<p-dropdown>`, `<ui-input-date-2>`) with custom `ngModelChange` event triggers and keyboard simulation.
-* **Privacy-Safe Dummy Strategy**: Generates structurally valid Indonesian identifiers using non-colliding dummy suffixes (NIK `9999999999`, KK `8888888888`, NPWP `7777777777`).
+* **Complex UI Framework Support**: Built-in handlers for **PrimeNG / Angular** elements (`<p-calendar>`, `<p-dropdown>`, `<ui-input-date-2>`), native `<select>` options, and radio/checkbox inputs with custom `ngModelChange` event triggers and keyboard simulation.
+* **Privacy-Safe Dummy Strategy**: Generates structurally valid Indonesian identifiers using non-colliding dummy suffixes (NIK `9999999999`, KK `8888888888`, NPWP `7777777777`, Phone `0812-0000-xxxx`).
 * **Session Recording & Export**: Track injection history across sessions and export logs to `.json` files.
 
 ---
@@ -222,4 +244,5 @@ While Fill-It achieves 100% success on standard web forms (React, Vue, Native HT
 
 * **Izin Minimum (Least Privilege)**: Ekstensi ini hanya meminta izin `activeTab`, `scripting`, dan `storage`.
 * **Zero Telemetry**: Tidak ada data pengujian yang dikirim ke server eksternal; seluruh pemrosesan dan penyimpanan dilakukan secara lokal di perangkat pengguna.
+* **Kebijakan Privasi Resmi**: Dokumentasi privasi lengkap tersedia di [PRIVACY.md](PRIVACY.md).
 * **Lisensi Akademik**: Proyek ini dikembangkan sebagai bagian dari Tugas Akhir. Data dummy yang dihasilkan murni diperuntukkan bagi pengujian perangkat lunak dan tidak dapat digunakan untuk transaksi atau keperluan ilegal.

@@ -24,11 +24,12 @@ const VALID_PROVINCE_CODES = new Set([
 describe('Indonesian Form Generator Logic', () => {
 
     describe('generateIndonesianPhone', () => {
-        it('should generate a valid Indonesian phone number with real operator prefix (08xx) and privacy-safe 0000xxxx suffix', () => {
+        it('should generate a valid Indonesian phone number with real operator prefix (08xx) and privacy-safe 00000000 suffix', () => {
             const phone = generateIndonesianPhone();
-            // Must start with a real Indonesian mobile operator prefix and contain 0000 test block
-            expect(phone).toMatch(/^08\d{2}0000\d{4}$/);
+            // Must start with a real Indonesian mobile operator prefix and end with 00000000 test block
+            expect(phone).toMatch(/^08\d{2}00000000$/);
             expect(phone).toHaveLength(12);
+            expect(phone.slice(4)).toBe('00000000');
         });
 
         it('should generate a number consisting only of digits', () => {
