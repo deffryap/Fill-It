@@ -66,7 +66,6 @@ export function IdentityProfileTab({
         setStatus('injecting');
         let id = identity;
         let isLogin = false;
-        let isRegister = false;
         let activeTab: chrome.tabs.Tab | null = null;
 
         try {
@@ -74,8 +73,7 @@ export function IdentityProfileTab({
                 const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
                 activeTab = tab ?? null;
                 if (tab?.url) {
-                    isLogin = /login|signin|masuk/i.test(tab.url);
-                    isRegister = /register|signup|daftar|registrasi|pendaftaran|coretax/i.test(tab.url);
+                    isLogin = /login|log-in|signin|sign-in|masuk|user-login|auth\/login/i.test(tab.url);
                 }
             }
 
@@ -91,9 +89,8 @@ export function IdentityProfileTab({
             } else {
                 id = generateIdentity(settings.selectedLocale);
                 await setIdentity(id);
-                if (isRegister) {
-                    await saveLastRegisteredIdentity(id);
-                }
+                // Save as last registered identity when filling any non-login form (registration/sign-up)
+                await saveLastRegisteredIdentity(id);
             }
 
             if (!activeTab?.id) throw new Error('Cannot find active tab.');

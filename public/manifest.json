@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Fill-It",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Smart data injection for form testing — auto-fill any web form with realistic dummy data in one click.",
     "author": "Fill-It Team",
     "homepage_url": "https://github.com/deffryap/fill-it",
